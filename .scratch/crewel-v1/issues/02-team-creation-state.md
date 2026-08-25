@@ -4,11 +4,11 @@
 
 **Blocked by:** 01 Toolchain bootstrap.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create writes `config.json` (lead type, teammate roster, settings) under `.crewel/teams/{name}/`
-- [ ] Refuses to run outside a git repo with a clear error (worktree-per-teammate is mandatory in v1)
-- [ ] Refuses a second active team in the same repo with a clear error (one-active-per-repo rule)
-- [ ] Unknown adapter type rejected, listing known types
-- [ ] Mock adapter registered and selectable, so no real CLIs are needed for core testing
-- [ ] `crewel team status` shows composition and a lifecycle summary of the board
+- [x] Create writes `config.json` (lead type, teammate roster, settings) under `.crewel/teams/{name}/`
+- [x] Refuses to run outside a git repo with a clear error (worktree-per-teammate is mandatory in v1)
+- [x] Refuses a second active team in the same repo with a clear error (one-active-per-repo rule)
+- [x] Unknown adapter type rejected, listing known types
+- [x] Mock adapter registered and selectable, so no real CLIs are needed for core testing
+- [x] `crewel team status` shows composition and a lifecycle summary of the board
