@@ -4,11 +4,11 @@
 
 **Blocked by:** 03 Direct-mode tickets & board view.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Assignment produces a context bundle containing the ticket, unread mailbox messages, prior progress notes, worktree path, and role instructions
-- [ ] Every turn ends with a TurnReport validated against the schema; an invalid/missing report is treated as failed-retryable, never silently "done"
-- [ ] Report statuses drive board transitions: done / blocked / in-progress
-- [ ] `needs-clarification` holds the ticket in an assigned-pending-clarification sub-state, routes the question to the lead, and a lead reply releases it back to work
-- [ ] Messages arriving mid-turn queue and deliver at the next turn boundary; none lost or duplicated
-- [ ] Heartbeat file touched during turns and cleared/settled afterward
+- [x] Assignment produces a context bundle containing the ticket, unread mailbox messages, prior progress notes, worktree path, and role instructions
+- [x] Every turn ends with a TurnReport validated against the schema; an invalid/missing report is treated as failed-retryable, never silently "done"
+- [x] Report statuses drive board transitions: done / blocked / in-progress
+- [x] `needs-clarification` holds the ticket in an assigned-pending-clarification sub-state, routes the question to the lead, and a lead reply releases it back to work
+- [x] Messages arriving mid-turn queue and deliver at the next turn boundary; none lost or duplicated
+- [x] Heartbeat file touched during turns and cleared/settled afterward
