@@ -4,9 +4,9 @@
 
 **Blocked by:** 09 OpenCode adapter, 10 Claude Code adapter.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Completes a scoped ticket end-to-end in a scratch repo
-- [ ] Sandbox/approval config allows workspace writes without granting full system access
-- [ ] Output-schema enforces the TurnReport; `turn.failed`/error events mapped to contract outcomes
-- [ ] Core needed zero adapter-specific special cases to accommodate Codex (the generalization proof)
+- [x] Completes a scoped ticket end-to-end in a scratch repo
+- [x] Sandbox/approval config allows workspace writes without granting full system access
+- [x] Output-schema enforces the TurnReport; `turn.failed`/error events mapped to contract outcomes
+- [x] Core needed zero adapter-specific special cases to accommodate Codex (the generalization proof)

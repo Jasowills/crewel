@@ -4,10 +4,10 @@
 
 **Blocked by:** 09 OpenCode adapter.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A sample request yields tickets that pass validation and are assignable
-- [ ] Dependency edges form an acyclic graph with no orphan blockers
-- [ ] The lead holds no code-writing permissions (verified behaviorally)
-- [ ] Clarification loop proven end-to-end: teammate emits needs-clarification, lead answers, work resumes
-- [ ] Works with any nominated lead type (OpenCode first; other types ride the adapter contract)
+- [x] A sample request yields tickets that pass validation and are assignable
+- [x] Dependency edges form an acyclic graph with no orphan blockers
+- [x] The lead holds no code-writing permissions (verified behaviorally)
+- [x] Clarification loop proven end-to-end: teammate emits needs-clarification, lead answers, work resumes
+- [x] Works with any nominated lead type (OpenCode first; other types ride the adapter contract)
