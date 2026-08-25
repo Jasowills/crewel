@@ -1,6 +1,8 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { CrewelError } from "../errors.js";
+import { TICKET_LIFECYCLE } from "../tickets/model.js";
+import type { Ticket } from "../tickets/model.js";
 import type { TeamConfig } from "./config.js";
 
 export const crewelDirName = ".crewel";
@@ -64,16 +66,6 @@ export async function findActiveTeams(repoRoot: string): Promise<LoadedTeam[]> {
   return teams.filter((team) => team.config.status === "active");
 }
 
-const TICKET_LIFECYCLE = [
-  "open",
-  "assigned",
-  "in-progress",
-  "needs-clarification",
-  "in-review",
-  "blocked",
-  "done",
-] as const;
-
 export interface BoardSummary {
   total: number;
   byStatus: Record<string, number>;
@@ -107,11 +99,33 @@ export async function summarizeBoard(
       byStatus[status] = current + 1;
       total += 1;
     } catch {
-      // Unreadable ticket files are skipped; the ticket store (ticket 03)
-      // will own strictness here.
+      // Unreadable ticket files are skipped; validation owns strictness.
     }
   }
   return { total, byStatus };
+}
+
+export async function loadTickets(
+  repoRoot: string,
+  name: string
+): Promise<Ticket[]> {
+  const dir = ticketsDir(repoRoot, name);
+  let entries;
+  try {
+    entries = await readdir(dir);
+  } catch {
+    return [];
+  }
+  const tickets: Ticket[] = [];
+  for (const file of entries.filter((f) => f.endsWith(".json")).sort()) {
+    try {
+      const raw = await readFile(path.join(dir, file), "utf8");
+      tickets.push(JSON.parse(raw) as Ticket);
+    } catch {
+      // Skip unreadable twins; validateTickets is the strict gate.
+    }
+  }
+  return tickets;
 }
 
 export async function appendGitIgnoreEntry(

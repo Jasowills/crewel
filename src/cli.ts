@@ -3,6 +3,7 @@ import { realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { CrewelError } from "./core/errors.js";
+import { board, validateTickets } from "./core/tickets/index.js";
 import { createTeam } from "./core/team/index.js";
 import { teamStatus as teamStatusCore } from "./core/team/index.js";
 
@@ -52,6 +53,8 @@ function printHelp(): void {
     "  team create <name> --lead <type> --teammates <type>:<count>,..."
   );
   console.log("  team status [name]");
+  console.log("  team tickets [--team <name>]");
+  console.log("  tickets validate [--team <name>]");
   console.log("");
   console.log("  --version, -v   Print the version");
 }
@@ -101,6 +104,45 @@ async function teamStatus(ctx: CliContext, args: string[]): Promise<number> {
   return 0;
 }
 
+async function resolveTeamName(
+  ctx: CliContext,
+  flagValue: string | undefined
+): Promise<string> {
+  if (flagValue) return flagValue;
+  const { config } = await teamStatusCore({ repoRoot: ctx.repoRoot });
+  return config.name;
+}
+
+async function ticketsValidate(
+  ctx: CliContext,
+  args: string[]
+): Promise<number> {
+  const { flags } = parseArgs(args);
+  const team = await resolveTeamName(ctx, flags.get("team"));
+  const { written } = await validateTickets({ repoRoot: ctx.repoRoot, team });
+  console.log(`✓ ${written} ticket(s) valid — JSON twins updated`);
+  return 0;
+}
+
+async function teamBoard(ctx: CliContext, args: string[]): Promise<number> {
+  const { flags } = parseArgs(args);
+  const name = await resolveTeamName(ctx, flags.get("team"));
+  const result = await board({ repoRoot: ctx.repoRoot, team: name });
+  console.log(`ticket board for "${name}"`);
+  for (const column of result.columns) {
+    if (column.tickets.length === 0) {
+      console.log(`  ${column.status}: (empty)`);
+      continue;
+    }
+    console.log(`  ${column.status}:`);
+    for (const ticket of column.tickets) {
+      const who = ticket.assignee ? ` (${ticket.assignee})` : "";
+      console.log(`    - ${ticket.id} ${ticket.title}${who}`);
+    }
+  }
+  return 0;
+}
+
 export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
   const [command, subcommand, ...rest] = argv;
   try {
@@ -115,11 +157,21 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
     if (command === "team") {
       if (subcommand === "create") return await teamCreate(ctx, rest);
       if (subcommand === "status") return await teamStatus(ctx, rest);
+      if (subcommand === "tickets") return await teamBoard(ctx, rest);
       if (subcommand === undefined) {
-        console.error("error: team needs a subcommand (create, status)");
+        console.error(
+          "error: team needs a subcommand (create, status, tickets)"
+        );
         return 1;
       }
       console.error(`error: unknown team subcommand "${subcommand}"`);
+      return 1;
+    }
+    if (command === "tickets") {
+      if (subcommand === "validate") return await ticketsValidate(ctx, rest);
+      console.error(
+        'error: unknown tickets subcommand — try "crewel tickets validate"'
+      );
       return 1;
     }
     console.error(`error: unknown command "${command}"`);
