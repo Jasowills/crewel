@@ -4,10 +4,10 @@
 
 **Blocked by:** 04 Turn engine & TurnReport protocol (mock adapter), 05 Worktree provisioning & branch topology.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Headless invocation runs in the correct worktree with permissions configured for unsupervised operation
-- [ ] TurnReport enforced via native JSON-schema structured output; schema failure surfaces as failed-retryable
-- [ ] Senior-bar persona active and demonstrable: an intentionally unclear ticket produces `needs-clarification` pushback rather than a guess
-- [ ] Error signatures (auth, provider 429/rate-limit) mapped onto the outcome contract
-- [ ] Reliability bar: repeated runs across fresh scratch repos complete without flake
+- [x] Headless invocation runs in the correct worktree with permissions configured for unsupervised operation
+- [x] TurnReport enforced via native JSON-schema structured output; schema failure surfaces as failed-retryable
+- [x] Senior-bar persona active and demonstrable: an intentionally unclear ticket produces `needs-clarification` pushback rather than a guess
+- [x] Error signatures (auth, provider 429/rate-limit) mapped onto the outcome contract
+- [x] Reliability bar: repeated runs across fresh scratch repos complete without flake
