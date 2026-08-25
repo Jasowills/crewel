@@ -37,4 +37,8 @@ export interface Ticket {
   clarification?: TicketClarification | null;
   /** Frozen by failure policy — immune to work until manually released. */
   frozen?: boolean;
+  /** Lead review verdict recorded (Q8: lead reviews before integration). */
+  approved?: boolean;
+  /** Dependency resolved — rebase onto integration tip at next turn. */
+  rebaseRequired?: boolean;
 }

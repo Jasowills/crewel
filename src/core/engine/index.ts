@@ -6,6 +6,10 @@ import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { CrewelError } from "../errors.js";
+import {
+  announceDependencyResolved,
+  rebaseDependentWorktrees,
+} from "../checkpoints/index.js";
 import { drainInbox, sendMessage } from "../mail/index.js";
 import { notifyJason } from "../notifications/index.js";
 import {
@@ -287,6 +291,33 @@ export async function unfreezeTicket(input: {
   });
 }
 
+/** Record the lead's review verdict (Q8) — required before integration. */
+export async function approveTicket(input: {
+  repoRoot: string;
+  team: string;
+  ticketId: string;
+}): Promise<void> {
+  const tickets = await loadTickets(input.repoRoot, input.team);
+  const ticket = tickets.find((t) => t.id === input.ticketId);
+  if (!ticket) {
+    throw new CrewelError(`ticket "${input.ticketId}" not found`);
+  }
+  if (ticket.status !== "done") {
+    throw new CrewelError(
+      `only done tickets can be approved ("${input.ticketId}" is ${ticket.status})`
+    );
+  }
+  await updateTicket(input.repoRoot, input.team, input.ticketId, {
+    approved: true,
+  });
+  safeNotify({
+    repoRoot: input.repoRoot,
+    team: input.team,
+    kind: "system",
+    body: `"${input.ticketId}" approved by review — eligible for integration.`,
+  });
+}
+
 export async function assignTicket(input: {
   repoRoot: string;
   team: string;
@@ -488,7 +519,7 @@ export async function runTeammateTurn(input: {
   // Work due: fresh assignments plus resumable in-progress work. A ticket
   // parked in-progress still belongs to its teammate across turns. Frozen
   // tickets are immune until released.
-  const work = (await loadTickets(repoRoot, team)).filter(
+  let work = (await loadTickets(repoRoot, team)).filter(
     (ticket) =>
       ticket.assignee === participantId &&
       !ticket.clarification &&
@@ -497,6 +528,22 @@ export async function runTeammateTurn(input: {
   );
   if (messages.length === 0 && work.length === 0) {
     return { ran: false, reason: "nothing-due", ticketIds: [] };
+  }
+
+  // Dependencies landed since our last turn? Rebase onto the new
+  // integration tip first; unresolvable conflicts block + escalate.
+  const rebase = await rebaseDependentWorktrees({
+    repoRoot,
+    team,
+    participantId,
+    tickets: work,
+  });
+  if (rebase.blockedTicketIds.length > 0) {
+    const blocked = new Set(rebase.blockedTicketIds);
+    work = work.filter((ticket) => !blocked.has(ticket.id));
+    if (work.length === 0 && messages.length === 0) {
+      return { ran: false, reason: "nothing-due", ticketIds: [] };
+    }
   }
 
   const notes = await readOptional(
@@ -658,6 +705,11 @@ export async function runTeammateTurn(input: {
           team,
           kind: "done",
           body: `"${ticket.id}" completed by ${participantId}.`,
+        });
+        await announceDependencyResolved({
+          repoRoot,
+          team,
+          resolvedTicketId: ticket.id,
         });
       }
     }
