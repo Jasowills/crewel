@@ -4,9 +4,9 @@
 
 **Blocked by:** 04 Turn engine & TurnReport protocol (mock adapter), 05 Worktree provisioning & branch topology.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A ticket merges into the integration branch only after its review pass is recorded
-- [ ] Dependency-resolved notification causes the dependent's next turn to include a rebase onto the new integration tip; clean rebase proven in a fixture
-- [ ] Conflicting fixture → ticket blocked + escalation message; no force-push anywhere in the codebase
-- [ ] Integration branch history stays linear and readable
+- [x] A ticket merges into the integration branch only after its review pass is recorded
+- [x] Dependency-resolved notification causes the dependent's next turn to include a rebase onto the new integration tip; clean rebase proven in a fixture
+- [x] Conflicting fixture → ticket blocked + escalation message; no force-push anywhere in the codebase
+- [x] Integration branch history stays linear and readable
