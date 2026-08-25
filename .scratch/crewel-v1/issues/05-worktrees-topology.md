@@ -4,10 +4,10 @@
 
 **Blocked by:** 02 Team creation & on-disk state.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Creating a team with N teammates yields N isolated worktrees, each checked out on its own branch
-- [ ] Integration branch `crewel/{team}` exists; `main` is untouched by team operations
-- [ ] New ticket branches are cut from the current integration tip
-- [ ] A failed or killed turn leaves the worktree byte-for-byte preserved (verified in a fixture)
-- [ ] Cleanup of merged branches happens only at archive time, never mid-run
+- [x] Creating a team with N teammates yields N isolated worktrees, each checked out on its own branch
+- [x] Integration branch `crewel/{team}` exists; `main` is untouched by team operations
+- [x] New ticket branches are cut from the current integration tip
+- [x] A failed or killed turn leaves the worktree byte-for-byte preserved (verified in a fixture)
+- [x] Cleanup of merged branches happens only at archive time, never mid-run

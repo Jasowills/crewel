@@ -4,9 +4,9 @@
 
 **Blocked by:** 04 Turn engine & TurnReport protocol (mock adapter).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] State changes appear in `crewel team watch` output immediately, no polling timer involved
-- [ ] `jason.log` is append-only, timestamped, human-readable
-- [ ] Peer and lead notifications wake the intended recipient's next turn (provable with mock adapters)
-- [ ] Watching works regardless of whether the tail started before or after the event
+- [x] State changes appear in `crewel team watch` output immediately, no polling timer involved
+- [x] `jason.log` is append-only, timestamped, human-readable
+- [x] Peer and lead notifications wake the intended recipient's next turn (provable with mock adapters)
+- [x] Watching works regardless of whether the tail started before or after the event

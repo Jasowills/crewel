@@ -5,6 +5,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { CrewelError } from "../errors.js";
 import { drainInbox, sendMessage } from "../mail/index.js";
+import { notifyJason } from "../notifications/index.js";
 import {
   loadAllTeams,
   loadTickets,
@@ -12,8 +13,14 @@ import {
   updateTicket,
 } from "../team/store.js";
 import type { Ticket } from "../tickets/model.js";
+import { ensureTeammateWorktree } from "../worktrees/index.js";
 
 export const LEAD_MAILBOX = "lead";
+
+function safeNotify(input: Parameters<typeof notifyJason>[0]): void {
+  // Notifications must never break engine operations.
+  notifyJason(input).catch(() => {});
+}
 
 export const SENIOR_ENGINEER_INSTRUCTIONS = [
   "You operate as a senior/principal engineer.",
@@ -65,6 +72,12 @@ export async function assignTicket(input: {
     kind: "assignment",
     body: `Ticket "${ticket.id} — ${ticket.title}" assigned to you.`,
   });
+  safeNotify({
+    repoRoot: input.repoRoot,
+    team: input.team,
+    kind: "assignment",
+    body: `"${ticket.id} — ${ticket.title}" assigned to ${input.assignee}.`,
+  });
 }
 
 export async function answerClarification(input: {
@@ -95,6 +108,12 @@ export async function answerClarification(input: {
     to: ticket.assignee,
     kind: "clarification-answer",
     body: `Clarification on "${input.ticketId}": ${input.answer}`,
+  });
+  safeNotify({
+    repoRoot: input.repoRoot,
+    team: input.team,
+    kind: "clarification",
+    body: `Lead answered clarification on "${input.ticketId}".`,
   });
 }
 
@@ -176,6 +195,15 @@ export async function runTeammateTurn(input: {
     path.join(participantDir(repoRoot, team, participantId), "notes.md")
   );
 
+  // Real isolated worktree for the turn (lazy-provisioned; zero-commit
+  // repos degrade to running in-place).
+  const ensured = await ensureTeammateWorktree({
+    repoRoot,
+    team,
+    participantId,
+  });
+  const worktreePath = "skipped" in ensured ? repoRoot : ensured.path;
+
   // Work has begun: reflect fresh assignments on the board before
   // anything can crash.
   for (const ticket of work) {
@@ -205,7 +233,7 @@ export async function runTeammateTurn(input: {
         team,
         participantId,
         role: "teammate",
-        worktreePath: repoRoot, // Ticket 05 swaps in isolated worktrees.
+        worktreePath,
         tickets: work,
         messages,
         progressNotes: notes,
@@ -235,13 +263,15 @@ export async function runTeammateTurn(input: {
       return { ran: true, outcome: "failed-retryable", ticketIds };
     }
     for (const ticket of work) {
-      await updateTicket(
-        repoRoot,
-        team,
-        ticket.id,
-        applyReportToTicket(validation.report, now)
-      );
+      const patch = applyReportToTicket(validation.report, now);
+      await updateTicket(repoRoot, team, ticket.id, patch);
       if (validation.report.status === "blocked") {
+        safeNotify({
+          repoRoot,
+          team,
+          kind: "blocked",
+          body: `"${ticket.id}" blocked — ${validation.report.summary}`,
+        });
         await sendMessage({
           repoRoot,
           team,
@@ -252,6 +282,12 @@ export async function runTeammateTurn(input: {
         });
       }
       if (validation.report.status === "needs-clarification") {
+        safeNotify({
+          repoRoot,
+          team,
+          kind: "clarification",
+          body: `"${ticket.id}" needs clarification from the lead.`,
+        });
         await sendMessage({
           repoRoot,
           team,
@@ -261,6 +297,14 @@ export async function runTeammateTurn(input: {
           body: `Ticket "${ticket.id}" needs clarification: ${
             validation.report.message?.body ?? validation.report.summary
           }`,
+        });
+      }
+      if (validation.report.status === "done") {
+        safeNotify({
+          repoRoot,
+          team,
+          kind: "done",
+          body: `"${ticket.id}" completed by ${participantId}.`,
         });
       }
     }
@@ -289,5 +333,14 @@ export async function runTeammateTurn(input: {
       lastError: result.error ?? result.outcome,
     });
   }
+  safeNotify({
+    repoRoot,
+    team,
+    kind: result.outcome === "rate-limited" ? "rate-limited" : "system",
+    body:
+      result.outcome === "rate-limited"
+        ? `${participantId} hit a rate limit on ${ticketIds.join(", ") || "its turn"} — paused pending resume.`
+        : `${participantId} turn failed (${result.outcome}) on ${ticketIds.join(", ") || "its turn"}.`,
+  });
   return { ran: true, outcome: result.outcome, ticketIds };
 }

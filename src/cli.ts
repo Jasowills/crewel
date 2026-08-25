@@ -11,6 +11,11 @@ import {
   assignTicket,
   runTeammateTurn,
 } from "./core/engine/index.js";
+import {
+  pingDesktop,
+  tailJasonLog,
+  watchTeam,
+} from "./core/notifications/index.js";
 
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json") as { version: string };
@@ -59,6 +64,7 @@ function printHelp(): void {
   );
   console.log("  team status [name]");
   console.log("  team tickets [--team <name>]");
+  console.log("  team watch [--team <name>] [--desktop]");
   console.log("  tickets validate [--team <name>]");
   console.log("  ticket assign <id> --to <teammate>");
   console.log('  ticket clarify <id> --answer "..."');
@@ -216,6 +222,43 @@ async function teammateTick(ctx: CliContext, args: string[]): Promise<number> {
   return 0;
 }
 
+async function teamWatch(ctx: CliContext, args: string[]): Promise<number> {
+  const { flags } = parseArgs(args);
+  const name = await resolveTeamName(ctx, flags.get("team"));
+  const desktop = flags.has("desktop");
+  let offset = (await tailJasonLog({ repoRoot: ctx.repoRoot, team: name }))
+    .length;
+  console.log(`watching "${name}" — Ctrl-C to stop`);
+  const watcher = await watchTeam(
+    { repoRoot: ctx.repoRoot, team: name },
+    (event) => {
+      if (event.source === "mail") {
+        console.log(`[mail] new mail for ${event.participant}`);
+      } else if (event.source === "tickets") {
+        console.log("[board] ticket state changed");
+      } else if (event.source === "jason") {
+        void (async () => {
+          const fresh = await tailJasonLog({
+            repoRoot: ctx.repoRoot,
+            team: name,
+            sinceBytes: offset,
+          });
+          if (fresh.length > 0) {
+            process.stdout.write(fresh);
+            offset += Buffer.byteLength(fresh);
+          }
+        })();
+        if (desktop) pingDesktop("crewel", `${name}: new notification`);
+      }
+    }
+  );
+  process.on("SIGINT", () => {
+    void watcher.stop().then(() => process.exit(0));
+  });
+  await new Promise(() => {});
+  return 0; // unreachable; keeps the signature honest
+}
+
 export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
   const [command, subcommand, ...rest] = argv;
   try {
@@ -231,6 +274,7 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
       if (subcommand === "create") return await teamCreate(ctx, rest);
       if (subcommand === "status") return await teamStatus(ctx, rest);
       if (subcommand === "tickets") return await teamBoard(ctx, rest);
+      if (subcommand === "watch") return await teamWatch(ctx, rest);
       if (subcommand === undefined) {
         console.error(
           "error: team needs a subcommand (create, status, tickets)"
