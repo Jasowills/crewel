@@ -6,6 +6,11 @@ import { CrewelError } from "./core/errors.js";
 import { board, validateTickets } from "./core/tickets/index.js";
 import { createTeam } from "./core/team/index.js";
 import { teamStatus as teamStatusCore } from "./core/team/index.js";
+import {
+  answerClarification,
+  assignTicket,
+  runTeammateTurn,
+} from "./core/engine/index.js";
 
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json") as { version: string };
@@ -55,6 +60,9 @@ function printHelp(): void {
   console.log("  team status [name]");
   console.log("  team tickets [--team <name>]");
   console.log("  tickets validate [--team <name>]");
+  console.log("  ticket assign <id> --to <teammate>");
+  console.log('  ticket clarify <id> --answer "..."');
+  console.log("  teammate tick <id>");
   console.log("");
   console.log("  --version, -v   Print the version");
 }
@@ -143,6 +151,71 @@ async function teamBoard(ctx: CliContext, args: string[]): Promise<number> {
   return 0;
 }
 
+async function ticketAssign(ctx: CliContext, args: string[]): Promise<number> {
+  const { positionals, flags } = parseArgs(args);
+  const id = positionals[0];
+  const to = flags.get("to");
+  if (!id || !to) {
+    console.error("error: ticket assign needs <id> and --to <teammate>");
+    return 1;
+  }
+  const { config } = await teamStatusCore({ repoRoot: ctx.repoRoot });
+  await assignTicket({
+    repoRoot: ctx.repoRoot,
+    team: config.name,
+    ticketId: id,
+    assignee: to,
+    teammateIds: config.teammates.map((mate) => mate.id),
+  });
+  console.log(`✓ ${id} assigned to ${to}`);
+  return 0;
+}
+
+async function ticketClarify(ctx: CliContext, args: string[]): Promise<number> {
+  const { positionals, flags } = parseArgs(args);
+  const id = positionals[0];
+  const answer = flags.get("answer");
+  if (!id || !answer) {
+    console.error('error: ticket clarify needs <id> and --answer "..."');
+    return 1;
+  }
+  const { config } = await teamStatusCore({ repoRoot: ctx.repoRoot });
+  await answerClarification({
+    repoRoot: ctx.repoRoot,
+    team: config.name,
+    ticketId: id,
+    answer,
+  });
+  console.log(`✓ clarification answered for ${id}`);
+  return 0;
+}
+
+async function teammateTick(ctx: CliContext, args: string[]): Promise<number> {
+  const { positionals } = parseArgs(args);
+  const id = positionals[0];
+  if (!id) {
+    console.error("error: teammate tick needs <teammate-id>");
+    return 1;
+  }
+  const { config } = await teamStatusCore({ repoRoot: ctx.repoRoot });
+  const result = await runTeammateTurn({
+    repoRoot: ctx.repoRoot,
+    team: config.name,
+    participantId: id,
+  });
+  if (!result.ran) {
+    console.log(`${id}: nothing due`);
+    return 0;
+  }
+  const tickets = result.ticketIds.join(", ") || "no tickets";
+  console.log(
+    `${id}: ${result.outcome}${
+      result.reportStatus ? ` (${result.reportStatus})` : ""
+    } — ${tickets}`
+  );
+  return 0;
+}
+
 export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
   const [command, subcommand, ...rest] = argv;
   try {
@@ -171,6 +244,19 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
       if (subcommand === "validate") return await ticketsValidate(ctx, rest);
       console.error(
         'error: unknown tickets subcommand — try "crewel tickets validate"'
+      );
+      return 1;
+    }
+    if (command === "ticket") {
+      if (subcommand === "assign") return await ticketAssign(ctx, rest);
+      if (subcommand === "clarify") return await ticketClarify(ctx, rest);
+      console.error("error: unknown ticket subcommand — try assign or clarify");
+      return 1;
+    }
+    if (command === "teammate") {
+      if (subcommand === "tick") return await teammateTick(ctx, rest);
+      console.error(
+        'error: unknown teammate subcommand — try "crewel teammate tick"'
       );
       return 1;
     }

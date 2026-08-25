@@ -1,4 +1,4 @@
-import { mockAdapter } from "./mock.js";
+import { createMockAdapter } from "./mock.js";
 import type { AgentAdapter } from "./types.js";
 
 const registry = new Map<string, AgentAdapter>();
@@ -15,4 +15,4 @@ export function knownAdapterIds(): string[] {
   return [...registry.keys()].sort();
 }
 
-registerAdapter(mockAdapter);
+registerAdapter(createMockAdapter());

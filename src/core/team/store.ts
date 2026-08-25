@@ -75,32 +75,18 @@ export async function summarizeBoard(
   repoRoot: string,
   name: string
 ): Promise<BoardSummary> {
+  const tickets = await loadTickets(repoRoot, name);
   const byStatus: Record<string, number> = {};
   for (const status of TICKET_LIFECYCLE) {
     byStatus[status] = 0;
   }
-  const dir = ticketsDir(repoRoot, name);
-  let entries;
-  try {
-    entries = await readdir(dir);
-  } catch {
-    return { total: 0, byStatus };
-  }
   let total = 0;
-  for (const file of entries) {
-    if (!file.endsWith(".json")) continue;
-    try {
-      const raw = await readFile(path.join(dir, file), "utf8");
-      const ticket = JSON.parse(raw) as { status?: string };
-      const status = ticket.status;
-      if (!status) continue;
-      const current = byStatus[status];
-      if (current === undefined) continue;
-      byStatus[status] = current + 1;
-      total += 1;
-    } catch {
-      // Unreadable ticket files are skipped; validation owns strictness.
-    }
+  for (const ticket of tickets) {
+    total += 1;
+    // Clarified tickets surface under needs-clarification regardless of
+    // their underlying lifecycle status.
+    const key = ticket.clarification ? "needs-clarification" : ticket.status;
+    if (byStatus[key] !== undefined) byStatus[key] += 1;
   }
   return { total, byStatus };
 }
@@ -126,6 +112,42 @@ export async function loadTickets(
     }
   }
   return tickets;
+}
+
+export async function updateTicket(
+  repoRoot: string,
+  team: string,
+  id: string,
+  patch: Partial<Ticket>
+): Promise<Ticket> {
+  const ticketPath = path.join(ticketsDir(repoRoot, team), `${id}.json`);
+  let raw: string;
+  try {
+    raw = await readFile(ticketPath, "utf8");
+  } catch {
+    throw new CrewelError(`ticket "${id}" not found — validate tickets first`);
+  }
+  let current: Ticket;
+  try {
+    current = JSON.parse(raw) as Ticket;
+  } catch {
+    throw new CrewelError(`corrupt ticket twin for "${id}"`);
+  }
+  const updated: Ticket = { ...current, ...patch };
+  await writeFile(ticketPath, `${JSON.stringify(updated, null, 2)}\n`, "utf8");
+  return updated;
+}
+
+export function participantsDir(repoRoot: string, team: string): string {
+  return path.join(teamDir(repoRoot, team), "participants");
+}
+
+export function participantDir(
+  repoRoot: string,
+  team: string,
+  participantId: string
+): string {
+  return path.join(participantsDir(repoRoot, team), participantId);
 }
 
 export async function appendGitIgnoreEntry(

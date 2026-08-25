@@ -19,6 +19,11 @@ export function isTicketStatus(value: unknown): value is TicketStatus {
 
 export const TICKET_ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 
+export interface TicketClarification {
+  question: string;
+  askedAt: string;
+}
+
 export interface Ticket {
   id: string;
   title: string;
@@ -27,4 +32,7 @@ export interface Ticket {
   dependsOn: string[];
   acceptanceCriteria: string[];
   scope?: string;
+  attempts?: number;
+  lastError?: string;
+  clarification?: TicketClarification | null;
 }

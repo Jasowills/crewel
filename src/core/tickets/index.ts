@@ -203,7 +203,15 @@ export async function board(input: {
   const tickets = await loadTickets(input.repoRoot, input.team);
   const columns = TICKET_LIFECYCLE.map((status) => ({
     status,
-    tickets: tickets.filter((ticket) => ticket.status === status),
+    tickets: tickets.filter((ticket) => {
+      // Clarified tickets surface under needs-clarification, not their
+      // underlying status column.
+      if (status === "needs-clarification") return !!ticket.clarification;
+      if (status === "assigned") {
+        return ticket.status === "assigned" && !ticket.clarification;
+      }
+      return ticket.status === status && !ticket.clarification;
+    }),
   }));
   return { columns, total: tickets.length };
 }
