@@ -335,6 +335,13 @@ describe("turn engine", () => {
   });
 
   it("records attempts for hard failures and rate limits", async () => {
+    // mock-2 busy: keeps the ticket on mock-1 so attempts accumulate here
+    // instead of auto-reassigning per the hybrid failure policy.
+    const { updateTicket } = await import("../src/core/team/store.js");
+    await updateTicket(repo, "demo", "t2", {
+      status: "in-progress",
+      assignee: "mock-2",
+    });
     registerAdapter(
       createMockAdapter({
         steps: [

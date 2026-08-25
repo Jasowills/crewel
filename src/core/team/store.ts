@@ -83,9 +83,13 @@ export async function summarizeBoard(
   let total = 0;
   for (const ticket of tickets) {
     total += 1;
-    // Clarified tickets surface under needs-clarification regardless of
-    // their underlying lifecycle status.
-    const key = ticket.clarification ? "needs-clarification" : ticket.status;
+    // Frozen surfaces under blocked; clarification under
+    // needs-clarification; both override underlying status.
+    const key = ticket.frozen
+      ? "blocked"
+      : ticket.clarification
+        ? "needs-clarification"
+        : ticket.status;
     if (byStatus[key] !== undefined) byStatus[key] += 1;
   }
   return { total, byStatus };

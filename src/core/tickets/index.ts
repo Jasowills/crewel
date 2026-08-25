@@ -204,9 +204,13 @@ export async function board(input: {
   const columns = TICKET_LIFECYCLE.map((status) => ({
     status,
     tickets: tickets.filter((ticket) => {
-      // Clarified tickets surface under needs-clarification, not their
-      // underlying status column.
+      // Frozen tickets surface under blocked; clarified under
+      // needs-clarification; both leave their underlying columns.
       if (status === "needs-clarification") return !!ticket.clarification;
+      if (status === "blocked") {
+        return ticket.status === "blocked" || ticket.frozen === true;
+      }
+      if (ticket.frozen) return false;
       if (status === "assigned") {
         return ticket.status === "assigned" && !ticket.clarification;
       }

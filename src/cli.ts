@@ -9,7 +9,14 @@ import { teamStatus as teamStatusCore } from "./core/team/index.js";
 import {
   answerClarification,
   assignTicket,
+  checkStalls,
+  interruptTeammate,
+  pauseTeammate,
+  resumeTeammate,
   runTeammateTurn,
+  startTeam,
+  stopTeam,
+  unfreezeTicket,
 } from "./core/engine/index.js";
 import {
   pingDesktop,
@@ -28,6 +35,8 @@ interface CliContext {
   repoRoot: string;
 }
 
+const BOOLEAN_FLAGS = new Set(["now", "desktop"]);
+
 function parseArgs(args: string[]): {
   positionals: string[];
   flags: Map<string, string>;
@@ -38,11 +47,16 @@ function parseArgs(args: string[]): {
     const arg = args[i];
     if (!arg) continue;
     if (arg.startsWith("--")) {
+      const name = arg.slice(2);
+      if (BOOLEAN_FLAGS.has(name)) {
+        flags.set(name, "true");
+        continue;
+      }
       const value = args[i + 1];
       if (value === undefined) {
         throw new CrewelError(`flag ${arg} expects a value`);
       }
-      flags.set(arg.slice(2), value);
+      flags.set(name, value);
       i++;
     } else {
       positionals.push(arg);
@@ -68,7 +82,14 @@ function printHelp(): void {
   console.log("  tickets validate [--team <name>]");
   console.log("  ticket assign <id> --to <teammate>");
   console.log('  ticket clarify <id> --answer "..."');
+  console.log("  ticket unfreeze <id>");
   console.log("  teammate tick <id>");
+  console.log("  teammate interrupt <id>");
+  console.log('  teammate pause <id> --reason "..."');
+  console.log("  teammate resume <id>");
+  console.log("  team stop [--team <name>] [--now]");
+  console.log("  team start [--team <name>]");
+  console.log("  team check-stalls --older-than-ms <ms>");
   console.log("");
   console.log("  --version, -v   Print the version");
 }
@@ -210,7 +231,13 @@ async function teammateTick(ctx: CliContext, args: string[]): Promise<number> {
     participantId: id,
   });
   if (!result.ran) {
-    console.log(`${id}: nothing due`);
+    const why =
+      result.reason === "paused"
+        ? "paused — resume before ticking"
+        : result.reason === "team-stopped"
+          ? "team is stopped — crewel team start to resume"
+          : "nothing due";
+    console.log(`${id}: ${why}`);
     return 0;
   }
   const tickets = result.ticketIds.join(", ") || "no tickets";
@@ -259,6 +286,143 @@ async function teamWatch(ctx: CliContext, args: string[]): Promise<number> {
   return 0; // unreachable; keeps the signature honest
 }
 
+async function teammateInterrupt(
+  ctx: CliContext,
+  args: string[]
+): Promise<number> {
+  const { positionals } = parseArgs(args);
+  const id = positionals[0];
+  if (!id) {
+    console.error("error: teammate interrupt needs <teammate-id>");
+    return 1;
+  }
+  const { config } = await teamStatusCore({ repoRoot: ctx.repoRoot });
+  const result = await interruptTeammate({
+    repoRoot: ctx.repoRoot,
+    team: config.name,
+    participantId: id,
+  });
+  console.log(
+    result.aborted
+      ? `✓ abort signalled to ${id} — ticket(s) return to assigned, worktree preserved`
+      : `${id}: no in-flight turn to interrupt`
+  );
+  return 0;
+}
+
+async function teammatePause(ctx: CliContext, args: string[]): Promise<number> {
+  const { positionals, flags } = parseArgs(args);
+  const id = positionals[0];
+  const reason = flags.get("reason") ?? "paused by operator";
+  if (!id) {
+    console.error("error: teammate pause needs <teammate-id>");
+    return 1;
+  }
+  const { config } = await teamStatusCore({ repoRoot: ctx.repoRoot });
+  await pauseTeammate({
+    repoRoot: ctx.repoRoot,
+    team: config.name,
+    participantId: id,
+    reason,
+  });
+  console.log(`✓ ${id} paused — ${reason}`);
+  return 0;
+}
+
+async function teammateResume(
+  ctx: CliContext,
+  args: string[]
+): Promise<number> {
+  const { positionals } = parseArgs(args);
+  const id = positionals[0];
+  if (!id) {
+    console.error("error: teammate resume needs <teammate-id>");
+    return 1;
+  }
+  const { config } = await teamStatusCore({ repoRoot: ctx.repoRoot });
+  await resumeTeammate({
+    repoRoot: ctx.repoRoot,
+    team: config.name,
+    participantId: id,
+  });
+  console.log(`✓ ${id} resumed`);
+  return 0;
+}
+
+async function teamStop(ctx: CliContext, args: string[]): Promise<number> {
+  const { flags } = parseArgs(args);
+  const name = await resolveTeamName(ctx, flags.get("team"));
+  const result = await stopTeam({
+    repoRoot: ctx.repoRoot,
+    team: name,
+    now: flags.has("now"),
+  });
+  console.log(
+    result.mode === "immediate"
+      ? `✓ stopped "${name}" immediately (aborted: ${
+          result.interrupted.join(", ") || "none"
+        })`
+      : `✓ "${name}" is stopping — in-flight turns finish, no new turns start`
+  );
+  return 0;
+}
+
+async function teamStart(ctx: CliContext, args: string[]): Promise<number> {
+  const { flags } = parseArgs(args);
+  const name = await resolveTeamName(ctx, flags.get("team"));
+  await startTeam({ repoRoot: ctx.repoRoot, team: name });
+  console.log(`✓ "${name}" started`);
+  return 0;
+}
+
+async function teamCheckStalls(
+  ctx: CliContext,
+  args: string[]
+): Promise<number> {
+  const { flags } = parseArgs(args);
+  const name = await resolveTeamName(ctx, flags.get("team"));
+  const olderThanMs = Number(flags.get("older-than-ms") ?? "60000");
+  const stalls = await checkStalls({
+    repoRoot: ctx.repoRoot,
+    team: name,
+    stalledMs: Number.isFinite(olderThanMs) ? olderThanMs : 60000,
+  });
+  if (stalls.length === 0) {
+    console.log("no stalls detected");
+  } else {
+    for (const stall of stalls) {
+      console.log(
+        `stalled: ${stall.participantId} (${Math.round(stall.ageMs / 1000)}s)${
+          stall.ticketsReset.length
+            ? ` — reset ${stall.ticketsReset.join(", ")}`
+            : ""
+        }`
+      );
+    }
+  }
+  return 0;
+}
+
+async function ticketUnfreeze(
+  ctx: CliContext,
+  args: string[]
+): Promise<number> {
+  const { positionals } = parseArgs(args);
+  const id = positionals[0];
+  if (!id) {
+    console.error("error: ticket unfreeze needs <id>");
+    return 1;
+  }
+  const { config } = await teamStatusCore({ repoRoot: ctx.repoRoot });
+  await unfreezeTicket({
+    repoRoot: ctx.repoRoot,
+    team: config.name,
+    ticketId: id,
+  });
+  console.log(`✓ ${id} unfrozen`);
+  return 0;
+}
+
 export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
   const [command, subcommand, ...rest] = argv;
   try {
@@ -275,6 +439,11 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
       if (subcommand === "status") return await teamStatus(ctx, rest);
       if (subcommand === "tickets") return await teamBoard(ctx, rest);
       if (subcommand === "watch") return await teamWatch(ctx, rest);
+      if (subcommand === "stop") return await teamStop(ctx, rest);
+      if (subcommand === "start") return await teamStart(ctx, rest);
+      if (subcommand === "check-stalls") {
+        return await teamCheckStalls(ctx, rest);
+      }
       if (subcommand === undefined) {
         console.error(
           "error: team needs a subcommand (create, status, tickets)"
@@ -294,13 +463,21 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
     if (command === "ticket") {
       if (subcommand === "assign") return await ticketAssign(ctx, rest);
       if (subcommand === "clarify") return await ticketClarify(ctx, rest);
-      console.error("error: unknown ticket subcommand — try assign or clarify");
+      if (subcommand === "unfreeze") return await ticketUnfreeze(ctx, rest);
+      console.error(
+        "error: unknown ticket subcommand — try assign, clarify or unfreeze"
+      );
       return 1;
     }
     if (command === "teammate") {
       if (subcommand === "tick") return await teammateTick(ctx, rest);
+      if (subcommand === "interrupt") {
+        return await teammateInterrupt(ctx, rest);
+      }
+      if (subcommand === "pause") return await teammatePause(ctx, rest);
+      if (subcommand === "resume") return await teammateResume(ctx, rest);
       console.error(
-        'error: unknown teammate subcommand — try "crewel teammate tick"'
+        "error: unknown teammate subcommand — try tick, interrupt, pause or resume"
       );
       return 1;
     }

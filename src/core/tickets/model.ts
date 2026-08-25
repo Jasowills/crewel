@@ -35,4 +35,6 @@ export interface Ticket {
   attempts?: number;
   lastError?: string;
   clarification?: TicketClarification | null;
+  /** Frozen by failure policy — immune to work until manually released. */
+  frozen?: boolean;
 }

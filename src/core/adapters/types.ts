@@ -30,12 +30,17 @@ export interface TurnReport {
 }
 
 export type TurnOutcome =
-  "completed" | "failed-retryable" | "failed-terminal" | "rate-limited";
+  | "completed"
+  | "aborted"
+  | "failed-retryable"
+  | "failed-terminal"
+  | "rate-limited";
 
 export interface RunTurnInput {
   bundle: ContextBundle;
   heartbeatPath: string;
   touchHeartbeat(): Promise<void> | void;
+  signal?: AbortSignal;
 }
 
 export interface TurnResult {
