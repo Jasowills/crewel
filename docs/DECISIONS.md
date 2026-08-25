@@ -1,0 +1,61 @@
+# Crewel — Grill Session Decisions Log
+
+Full record of every resolved question from the pre-build grill sessions, both
+rounds. Reference this alongside the original spec ([`SPEC.md`](SPEC.md)) and
+the PRD ([`PRD.md`](PRD.md)). Where wording differs, later documents win.
+
+---
+
+## Round 1
+
+| # | Question | Resolution |
+|---|---|---|
+| Q1 | Real name | **ragtag** (tentative) — later killed in Round 2, see Q13 |
+| Q2 | License | **MIT** |
+| Q3 | Language/runtime | **TypeScript, Node ≥20**, single npm package, **vitest** |
+| Q4 | Execution model | **Turn-based**: fresh headless invocation per mailbox delivery, seeded with a context bundle assembled from disk. Persistent sessions deferred to a later per-adapter optimization. |
+| Q5 | Completion-signaling contract | **Accepted**: every turn ends with a schema-validated `TurnReport` (status/summary/changedFiles/testEvidence) + heartbeat file for stall detection. `needs-clarification` becomes a first-class protocol state. |
+| Q6 | Lead role | **Dedicated, non-coding lead** for v1 (not dual-role teammate+lead) |
+| Q7 | Third adapter | **Codex**, provisional at the time — confirmed hard in Round 2 (see research findings below) |
+| Q8 | Who owns `in-review → done` | **Lead reviews by default**, per-team override allowed, **Jason gates anything touching `main`** |
+| Q9 | Failure recovery | **Hybrid**: auto-reassign only if an idle teammate exists AND the failed worktree is clean; >2 failures on the same ticket → freeze + escalate to Jason; failed worktrees never deleted |
+| Q10 | Jason's notifications | **`jason.log` + `crewel team watch` live-tail** in v1; desktop pings behind a flag; full dashboard explicitly deferred, not v1 scope |
+| Q11 | State directory conventions | **Gitignored by default**, with a `team archive` command to snapshot ticket history into the repo on close-out. **Git + worktree-per-teammate mandatory** in v1. |
+
+## Round 2
+
+### Research findings that settled things before new questions were even asked
+
+- **Q7 follow-up — Codex confirmed hard.** Beyond structural wins (`--output-schema` enforcement, purpose-built `codex exec` CI story, `AGENTS.md` injection): Gemini CLI's consumer tier stopped serving requests entirely on June 18, 2026 — Google is sunsetting it for Antigravity CLI. Building adapter #3 on a product in managed decline was never a real option.
+- **Q5 bonus validation.** All three v1 targets support natively schema-enforced output: OpenCode SDK `json_schema`, Claude Code `--json-schema`, Codex `--output-schema`. The TurnReport contract doesn't rely on prompt-compliance; each adapter gets real enforcement. Also confirmed: none of the three publish exit-code tables, reinforcing that completion detection must key off structured events + report files.
+- **Q1 reopened.** "ragtag" is dead: exact name taken on npm, actively taken on PyPI/Bioconda (a genomics tool whose binary is literally `ragtag.py`), plus 2+ live AI-agent CLIs already named ragtag, and instant RAG-conflation risk. Research ranking: posse > menagerie > medley. Caveat: a small in-niche `posse` repo already exists and "POSSE" is ubiquitous IndieWeb jargon; all bare words were npm-squatted regardless.
+
+### A second naming round (coined candidates)
+
+A fresh batch of coined/compound names was collision-checked (2026-08-25):
+
+- **oddcrew** — CLEAR everywhere (npm + PyPI + Homebrew free; zero relevant collisions)
+- **crewcall** — registry-clean but contested by ~6 same-name film/staffing apps; generic term
+- **callsheet** — TAKEN (Casey Liss's award-winning app + active npm lib family)
+- **troupe** — TAKEN (PyPI `troupe` is literally "a persistent, governed AI team for Claude Code" — a direct competitor)
+- **crewel** — CLEAR everywhere; only noise is crewel embroidery (the craft), no software collisions; `.dev`/`.io` available at decision time
+
+| # | Question | Resolution |
+|---|---|---|
+| Q13 | Name | **`crewel`.** Chosen from verified coined candidates over oddcrew (runner-up, safest-on-paper) and crewcall. The name doubles as the metaphor: crewel embroidery is many differently-colored threads stitched into one fabric — many different agents stitched into one team. Exact npm package was free at decision time. Claim npm/PyPI/domains before any public announcement. |
+| Q14 | Interrupt semantics | **Yes, interrupt support is essential.** Mailbox messages arriving mid-turn queue until the turn boundary. Jason or the lead can cancel an in-flight turn: SIGTERM the process, turn marked aborted, ticket returns to `assigned`, worktree preserved untouched. `team stop` lets turns finish then shuts down; `--now` kills immediately. |
+| Q15 | Branch topology & conflict policy | **Adopted as proposed.** Teammates work `crewel/{team}/{ticket-id}` branches cut from a per-team integration branch (`crewel/{team}`). Lead merges into integration only after review passes. Close-out = one PR, integration → `main`, gated by Jason. When a dependency resolves, the assignee rebases onto the new integration tip during its next turn; conflicts it can't cleanly resolve → `blocked` + escalate. **`main` is never touched directly.** |
+| Q16 | Done-gate check command | **Opt-in `checkCommand`, off by default.** A per-project command (test suite/lint) executed in the ticket's worktree before accepting `done`; failing it returns the ticket to `in-progress`. Projects without a runnable gate aren't blocked by this, but when configured, it's law. |
+| Q17 | Rate-limit/cost scope for v1 | **Reactive only, confirmed.** Adapter-specific detection of limit/auth errors (Claude's typed `api_retry` events, provider 429s elsewhere) → teammate auto-pauses, stops claiming tickets, notifies Jason. Manual `teammate pause`/`resume` supported. Declarative dollar/token budgets deferred to v2. |
+| Q18 | Hand-authored ticket format | **Markdown with YAML frontmatter** (id/title/status/deps/acceptance) for the "Jason defines tickets directly" mode — pleasant to write by hand and in editors, normalized to internal JSON. `tickets validate` catches malformed ones before a team runs. Humans author Markdown; machines read JSON. |
+| Q19 | Lead instance type | **Confirmed.** Lead runs on whichever adapter is nominated at team-creation time (`--lead opencode\|claude-code\|codex`) — same adapters, different role prompt, no code-writing permissions. Any adapter type can lead. |
+| Q20 | Team-per-repo concurrency | **Enforce one active team per target repo at a time**, with a clear error if violated. Multiple teams machine-wide are fine (isolated state dirs) — the constraint is per-repo, not global. Revisit later if this proves too restrictive. |
+| Q21 | Repo scaffolding trigger | **Executed.** Repo scaffolded at `~/code/crewel` immediately upon naming resolution (git init on `main`, MIT LICENSE, package.json, spec + decisions log under `docs/`, then PRD). |
+
+---
+
+## Status
+
+Design tree exhausted. No open decisions remain. Pipeline from here:
+
+**PRD** (this repo, `docs/PRD.md`) → `/to-tickets` → `/tdd`
