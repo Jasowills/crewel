@@ -1,4 +1,5 @@
 import { createMockAdapter } from "./mock.js";
+import { createOpencodeAdapter } from "./opencode.js";
 import type { AgentAdapter } from "./types.js";
 
 const registry = new Map<string, AgentAdapter>();
@@ -16,3 +17,4 @@ export function knownAdapterIds(): string[] {
 }
 
 registerAdapter(createMockAdapter());
+registerAdapter(createOpencodeAdapter());
