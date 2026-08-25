@@ -1,4 +1,5 @@
 import { createClaudeAdapter } from "./claude.js";
+import { createCodexAdapter } from "./codex.js";
 import { createMockAdapter } from "./mock.js";
 import { createOpencodeAdapter } from "./opencode.js";
 import type { AgentAdapter } from "./types.js";
@@ -20,3 +21,4 @@ export function knownAdapterIds(): string[] {
 registerAdapter(createMockAdapter());
 registerAdapter(createOpencodeAdapter());
 registerAdapter(createClaudeAdapter());
+registerAdapter(createCodexAdapter());
