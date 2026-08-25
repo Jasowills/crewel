@@ -84,15 +84,21 @@ describe("createTeam", () => {
     await expect(
       createTeam({
         ...makeTeamInput("ghost"),
-        leadType: "claude-code",
+        leadType: "phantom-adapter",
       })
-    ).rejects.toThrow(/unknown adapter type "claude-code"/);
+    ).rejects.toThrow(/unknown adapter type "phantom-adapter"/);
     await expect(
       createTeam({
         ...makeTeamInput("ghost"),
-        leadType: "claude-code",
+        leadType: "phantom-adapter",
       })
-    ).rejects.toThrow(/known types: mock/);
+    ).rejects.toThrow(/known types:/);
+    await expect(
+      createTeam({
+        ...makeTeamInput("ghost"),
+        leadType: "phantom-adapter",
+      })
+    ).rejects.toThrow(/mock/);
   });
 
   it("refuses to run outside a git repository", async () => {
