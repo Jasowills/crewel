@@ -4,10 +4,10 @@
 
 **Blocked by:** 04 Turn engine & TurnReport protocol (mock adapter), 05 Worktree provisioning & branch topology.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Completes a scoped ticket end-to-end in a scratch repo
-- [ ] TurnReport enforced via JSON-schema output; violation treated as failed-retryable
-- [ ] `api_retry` / typed error statuses mapped to the rate-limit classification path
-- [ ] Permission mode configured for unsupervised operation inside the worktree
-- [ ] Parity check: identical bundles produce equivalent behavior vs. the OpenCode adapter on shared fixtures
+- [x] Completes a scoped ticket end-to-end in a scratch repo
+- [x] TurnReport enforced via JSON-schema output; violation treated as failed-retryable
+- [x] `api_retry` / typed error statuses mapped to the rate-limit classification path
+- [x] Permission mode configured for unsupervised operation inside the worktree
+- [x] Parity check: identical bundles produce equivalent behavior vs. the OpenCode adapter on shared fixtures
