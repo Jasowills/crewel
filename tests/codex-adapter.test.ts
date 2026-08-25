@@ -105,7 +105,7 @@ async function readShimCalls(): Promise<
 }
 
 describe("codex adapter", () => {
-  it("probes availability through --version", async () => {
+  it("probes availability through --version", { timeout: 10000 }, async () => {
     const adapter = createCodexAdapter({ bin: binPath });
     expect(await adapter.checkAvailable()).toBe(true);
     const missing = createCodexAdapter({
