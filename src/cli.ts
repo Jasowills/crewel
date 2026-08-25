@@ -3,6 +3,7 @@ import { realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { CrewelError } from "./core/errors.js";
+import { decomposeRequest } from "./core/lead/index.js";
 import { board, validateTickets } from "./core/tickets/index.js";
 import { createTeam } from "./core/team/index.js";
 import { teamStatus as teamStatusCore } from "./core/team/index.js";
@@ -90,6 +91,7 @@ function printHelp(): void {
   console.log("  team stop [--team <name>] [--now]");
   console.log("  team start [--team <name>]");
   console.log("  team check-stalls --older-than-ms <ms>");
+  console.log('  team run --request "..." [--team <name>]');
   console.log("");
   console.log("  --version, -v   Print the version");
 }
@@ -423,6 +425,27 @@ async function ticketUnfreeze(
   return 0;
 }
 
+async function teamRun(ctx: CliContext, args: string[]): Promise<number> {
+  const { positionals, flags } = parseArgs(args);
+  const request = flags.get("request");
+  if (!request) {
+    console.error('error: team run needs --request "..."');
+    return 1;
+  }
+  const teamFlag = flags.get("team");
+  const teamPos = positionals[0];
+  const team = teamFlag ?? teamPos;
+  const result = await decomposeRequest({
+    repoRoot: ctx.repoRoot,
+    team,
+    request,
+  });
+  console.log(
+    `✓ decomposed into ${result.count} tickets: ${result.ticketIds.join(", ")}`
+  );
+  return 0;
+}
+
 export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
   const [command, subcommand, ...rest] = argv;
   try {
@@ -444,6 +467,7 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
       if (subcommand === "check-stalls") {
         return await teamCheckStalls(ctx, rest);
       }
+      if (subcommand === "run") return await teamRun(ctx, rest);
       if (subcommand === undefined) {
         console.error(
           "error: team needs a subcommand (create, status, tickets)"
