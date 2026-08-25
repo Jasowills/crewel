@@ -4,11 +4,11 @@
 
 **Blocked by:** 04 Turn engine & TurnReport protocol (mock adapter), 05 Worktree provisioning & branch topology, 06 Live notifications.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Interrupting a turn marks it aborted, returns the ticket to assigned, and leaves the worktree byte-for-byte intact
-- [ ] `team stop` lets in-flight turns finish then shuts down; `--now` kills immediately
-- [ ] A heartbeat exceeding its threshold flags the teammate stalled and applies the failure policy
-- [ ] Rate-limit-classified failures auto-pause the teammate (stops claiming tickets), notify Jason, and resume cleanly on command
-- [ ] Auto-reassign fires only for idle-teammate + clean-worktree cases; a messy worktree escalates to Jason instead
-- [ ] A third failure on the same ticket freezes it and escalates; frozen tickets are immune to reassignment until manually released
+- [x] Interrupting a turn marks it aborted, returns the ticket to assigned, and leaves the worktree byte-for-byte intact
+- [x] `team stop` lets in-flight turns finish then shuts down; `--now` kills immediately
+- [x] A heartbeat exceeding its threshold flags the teammate stalled and applies the failure policy
+- [x] Rate-limit-classified failures auto-pause the teammate (stops claiming tickets), notify Jason, and resume cleanly on command
+- [x] Auto-reassign fires only for idle-teammate + clean-worktree cases; a messy worktree escalates to Jason instead
+- [x] A third failure on the same ticket freezes it and escalates; frozen tickets are immune to reassignment until manually released
