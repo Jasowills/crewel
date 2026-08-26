@@ -6,6 +6,7 @@ import { CrewelError } from "../errors.js";
 import { sendMessage } from "../mail/index.js";
 import { notifyJason } from "../notifications/index.js";
 import { loadTickets, teamDir, updateTicket } from "../team/store.js";
+import { loadAllTeams } from "../team/store.js";
 import type { Ticket } from "../tickets/model.js";
 import {
   cleanGitEnv,
@@ -137,6 +138,36 @@ export async function mergeApprovedTicket(input: {
       `ticket "${input.ticketId}" has no assignee — cannot locate its branch`
     );
   }
+  // checkCommand gate: run configured command in the ticket worktree
+  const teamEntry = (await loadAllTeams(input.repoRoot)).find(
+    (e) => e.name === input.team
+  );
+  const checkCommand = teamEntry?.config.checkCommand;
+  if (checkCommand) {
+    const wt = worktreePathFor(input.repoRoot, input.team, ticket.assignee);
+    try {
+      const runSh = promisify(execFile);
+      await runSh("sh", ["-c", checkCommand], {
+        cwd: wt,
+        env: cleanGitEnv(),
+        timeout: 60_000,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      await updateTicket(input.repoRoot, input.team, ticket.id, {
+        status: "in-progress",
+        approved: false,
+        lastError: `checkCommand failed: ${detail.slice(0, 300)}`,
+      });
+      safeNotify({
+        repoRoot: input.repoRoot,
+        team: input.team,
+        kind: "system",
+        body: `"${ticket.id}" checkCommand failed — bounced to in-progress.`,
+      });
+      return { merged: false, detail: "check failed" };
+    }
+  }
   const checkout = await ensureIntegrationCheckout(input);
   // Merge into the integration branch inside the admin checkout; a dirty
   // checkpoint would poison later merges, so refuse instead of guessing.
@@ -161,6 +192,11 @@ export async function mergeApprovedTicket(input: {
       kind: "system",
       body: `"${ticket.id}" merged into ${integrationBranchFor(input.team)}.`,
     });
+    // Cleanup ticket-specific branch if it exists (teammate branches stay)
+    const ticketBranch = `crewel/${input.team}/${ticket.id}`;
+    if (ticketBranch !== branch) {
+      await git(input.repoRoot, ["branch", "-d", ticketBranch]).catch(() => {});
+    }
     return { merged: true, detail: out.trim() };
   } catch {
     // Conflict: abort cleanly, block the ticket, escalate — never force.

@@ -13,6 +13,7 @@ export interface TeamConfig {
   lead: { type: string };
   teammates: Teammate[];
   settings: Record<string, string>;
+  checkCommand?: string;
 }
 
 export const TEAM_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/;

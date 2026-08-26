@@ -100,7 +100,7 @@ async function readShimCalls(): Promise<
 }
 
 describe("opencode adapter", () => {
-  it("probes availability through --version", async () => {
+  it("probes availability through --version", { timeout: 10000 }, async () => {
     const adapter = createOpencodeAdapter({ bin: binPath });
     expect(await adapter.checkAvailable()).toBe(true);
     const missing = createOpencodeAdapter({

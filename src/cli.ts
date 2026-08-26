@@ -24,6 +24,8 @@ import {
   tailJasonLog,
   watchTeam,
 } from "./core/notifications/index.js";
+import { archiveTeam } from "./core/archive/index.js";
+import { openCloseoutPR } from "./core/pr/index.js";
 
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json") as { version: string };
@@ -92,6 +94,8 @@ function printHelp(): void {
   console.log("  team start [--team <name>]");
   console.log("  team check-stalls --older-than-ms <ms>");
   console.log('  team run --request "..." [--team <name>]');
+  console.log("  team archive [--team <name>]");
+  console.log("  team closeout [--team <name>]");
   console.log("");
   console.log("  --version, -v   Print the version");
 }
@@ -446,6 +450,26 @@ async function teamRun(ctx: CliContext, args: string[]): Promise<number> {
   return 0;
 }
 
+async function teamArchive(ctx: CliContext, args: string[]): Promise<number> {
+  const { flags } = parseArgs(args);
+  const team = await resolveTeamName(ctx, flags.get("team"));
+  const result = await archiveTeam({ repoRoot: ctx.repoRoot, team });
+  console.log(`✓ archived to ${result.path}`);
+  return 0;
+}
+
+async function teamCloseout(ctx: CliContext, args: string[]): Promise<number> {
+  const { flags } = parseArgs(args);
+  const team = await resolveTeamName(ctx, flags.get("team"));
+  const result = await openCloseoutPR({ repoRoot: ctx.repoRoot, team });
+  if (result.url) {
+    console.log(`✓ PR opened: ${result.url}`);
+  } else {
+    console.log(`✓ close-out PR prepared at ${result.path} — gated on Jason`);
+  }
+  return 0;
+}
+
 export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
   const [command, subcommand, ...rest] = argv;
   try {
@@ -468,6 +492,8 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
         return await teamCheckStalls(ctx, rest);
       }
       if (subcommand === "run") return await teamRun(ctx, rest);
+      if (subcommand === "archive") return await teamArchive(ctx, rest);
+      if (subcommand === "closeout") return await teamCloseout(ctx, rest);
       if (subcommand === undefined) {
         console.error(
           "error: team needs a subcommand (create, status, tickets)"
