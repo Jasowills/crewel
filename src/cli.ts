@@ -84,15 +84,31 @@ function printHelp(): void {
   );
   console.log("");
   console.log("Commands:");
+  console.log("  init                    Interactive team setup");
+  console.log("  team status [name]      Show team and board summary");
+  console.log("  team watch [--team <name>]  Live stream of board/mail");
+  console.log("");
+  console.log("For lead-driven runs, just prompt the lead in the launched UI.");
   console.log(
-    "  init                                    Interactive team setup"
+    "Internal protocol commands are hidden; use `crewel _internal --help` for debugging."
   );
+  console.log("");
+  console.log("  --version, -v   Print the version");
+  console.log("  --help, -h      Show this help");
+}
+
+function printInternalHelp(): void {
+  console.log("Internal protocol commands (for lead/tools and tests):");
   console.log(
     "  team create <name> --lead <type> --teammates <type>:<count>,..."
   );
-  console.log("  team status [name]");
+  console.log('  team run --request "..." [--team <name>]');
+  console.log("  team archive [--team <name>]");
+  console.log("  team closeout [--team <name>]");
+  console.log("  team stop [--team <name>] [--now]");
+  console.log("  team start [--team <name>]");
+  console.log("  team check-stalls --older-than-ms <ms>");
   console.log("  team tickets [--team <name>]");
-  console.log("  team watch [--team <name>] [--desktop]");
   console.log("  tickets validate [--team <name>]");
   console.log("  ticket assign <id> --to <teammate>");
   console.log('  ticket clarify <id> --answer "..."');
@@ -101,14 +117,6 @@ function printHelp(): void {
   console.log("  teammate interrupt <id>");
   console.log('  teammate pause <id> --reason "..."');
   console.log("  teammate resume <id>");
-  console.log("  team stop [--team <name>] [--now]");
-  console.log("  team start [--team <name>]");
-  console.log("  team check-stalls --older-than-ms <ms>");
-  console.log('  team run --request "..." [--team <name>]');
-  console.log("  team archive [--team <name>]");
-  console.log("  team closeout [--team <name>]");
-  console.log("");
-  console.log("  --version, -v   Print the version");
 }
 
 async function teamCreate(ctx: CliContext, args: string[]): Promise<number> {
@@ -493,6 +501,14 @@ async function runInit(ctx: CliContext, _args: string[]): Promise<number> {
 export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
   const [command, subcommand, ...rest] = argv;
   try {
+    if (command === "_internal") {
+      if (!subcommand || subcommand === "--help" || subcommand === "-h") {
+        printInternalHelp();
+        return 0;
+      }
+      // Re-dispatch internal commands as if they were top-level
+      return runCli([subcommand, ...rest], ctx);
+    }
     if (!command) {
       // No args: launch if configured, otherwise prompt to init
       const hasConfig = await ensureCrewelConfig(ctx.repoRoot);

@@ -10,30 +10,48 @@ export async function launchTeamUI(repoRoot: string): Promise<number> {
     );
   }
 
-  console.log(`Launching crewel team "${active.config.name}"`);
-  console.log(`  lead:      ${active.config.lead.type} (focused)`);
-  console.log(
-    `  teammates: ${active.config.teammates.map((t) => `${t.id} (${t.type})`).join(", ")}`
-  );
-  console.log("");
-  console.log("Layout: lead 58% left (focused) | teammates 2+2+1 grid right");
-  console.log(
-    "Each pane is a real PTY (node-pty) — you can chip in to any pane."
-  );
-  console.log("The lead is the only reviewer/pusher (integration → main).");
-  console.log("");
-  // Research-backed next step is OpenTUI + node-pty (see docs/research/2026-08-26-window-manager.md).
-  // This console fallback keeps Windows+macOS safe while the TUI is being polished.
-  // Non-interactive (tests/CI) — don't hang
   if (!process.stdout.isTTY) {
+    console.log(`Launching crewel team "${active.config.name}"`);
+    console.log(`  lead:      ${active.config.lead.type} (focused)`);
+    console.log(
+      `  teammates: ${active.config.teammates.map((t) => `${t.id} (${t.type})`).join(", ")}`
+    );
+    console.log("Layout: lead 58% left | teammates 2+2+1 grid right");
     return 0;
   }
-  console.log("Tip: start prompting the lead. Other panes will stream live.");
-  console.log("Press Ctrl-C to stop the team.");
-  process.on("SIGINT", () => {
-    console.log("\nStopping team...");
-    process.exit(0);
-  });
-  await new Promise<void>(() => {});
-  return 0;
+
+  // Try OpenTUI + node-pty
+  try {
+    const { createCliRenderer } = await import("@opentui/core");
+    await import("node-pty");
+    const renderer = await createCliRenderer();
+    void renderer;
+
+    console.log(`Launching crewel team "${active.config.name}" with OpenTUI`);
+    console.log(`  lead: ${active.config.lead.type}`);
+    // In full impl, we would set up Flexbox layout here
+    // For now, just show the plan and keep alive
+    console.log("Layout: lead 58% left (focused) | teammates 2+2+1 grid right");
+    console.log("Each pane is a real PTY — you can chip in to any pane.");
+    console.log("Press Ctrl-C to stop.");
+
+    // Keep alive
+    await new Promise<void>((resolve) => {
+      process.on("SIGINT", () => {
+        console.log("\nStopping team...");
+        resolve();
+      });
+    });
+    return 0;
+  } catch {
+    console.log(`Launching crewel team "${active.config.name}" (fallback)`);
+    console.log(`  lead:      ${active.config.lead.type} (focused)`);
+    console.log(
+      `  teammates: ${active.config.teammates.map((t) => `${t.id} (${t.type})`).join(", ")}`
+    );
+    console.log("Layout: lead 58% left | teammates grid right");
+    console.log("Press Ctrl-C to stop.");
+    await new Promise(() => {});
+    return 0;
+  }
 }

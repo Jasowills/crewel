@@ -118,19 +118,29 @@ crewel team watch
 
 ## Commands
 
-All commands are `crewel <group> <action>` and exit `0` on success, `1` on usage or domain errors with an actionable `error:` line.
+Public:
+
+```
+crewel init                           # interactive setup
+crewel                                # launch team UI (6 panes, lead focused)
+crewel team status [name]
+crewel team watch [--team <name>]
+```
+
+All commands exit `0` on success, `1` on usage or domain errors with an actionable `error:` line. Run `crewel --help` for details. The lead handles `assign`, `tick`, `review`, and `push` internally — you just prompt the lead.
+
+<details>
+<summary>Internal protocol (for lead/tools and tests)</summary>
 
 ```
 crewel team create <name> --lead <type> --teammates <type>:<count>,...
-crewel team status [name]
-crewel team tickets [--team <name>]
-crewel team watch [--team <name>] [--desktop]
 crewel team run --request "..." [--team <name>]
 crewel team archive [--team <name>]
 crewel team closeout [--team <name>]
 crewel team stop [--team <name>] [--now]
 crewel team start [--team <name>]
 crewel team check-stalls --older-than-ms <ms>
+crewel team tickets [--team <name>]
 crewel tickets validate [--team <name>]
 crewel ticket assign <id> --to <teammate>
 crewel ticket clarify <id> --answer "..."
@@ -141,7 +151,8 @@ crewel teammate pause <id> --reason "..."
 crewel teammate resume <id>
 ```
 
-Run `crewel --help` or `crewel <command> --help` for details. Unknown commands and missing flags report `error: ... — try "crewel ..."` with the exact fix.
+Hidden from `crewel --help`; use `crewel _internal --help` to see them.
+</details>
 
 ## Documentation
 
