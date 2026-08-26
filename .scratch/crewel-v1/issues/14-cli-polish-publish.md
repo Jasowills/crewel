@@ -4,9 +4,9 @@
 
 **Blocked by:** 12 Review → merge → close-out, 13 Codex adapter.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Full command surface consistent in naming, help text, and exit codes; every error suggests the fix
-- [ ] README quickstart verified verbatim against actual behavior
-- [ ] Package metadata complete for OSS publish (repository, keywords, files, license pointer); private flag removed deliberately at publish time
-- [ ] v0.1.0 tagged
+- [x] Full command surface consistent in naming, help text, and exit codes; every error suggests the fix
+- [x] README quickstart verified verbatim against actual behavior
+- [x] Package metadata complete for OSS publish (repository, keywords, files, license pointer); private flag removed deliberately at publish time
+- [x] v0.1.0 tagged
