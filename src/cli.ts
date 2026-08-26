@@ -25,6 +25,8 @@ import {
   watchTeam,
 } from "./core/notifications/index.js";
 import { archiveTeam } from "./core/archive/index.js";
+import { ensureCrewelConfig, runInitWizard } from "./cli/init.js";
+import { launchTeamUI } from "./cli/launcher.js";
 import { openCloseoutPR } from "./core/pr/index.js";
 
 const require = createRequire(import.meta.url);
@@ -74,8 +76,17 @@ function printHelp(): void {
   );
   console.log("");
   console.log("Usage: crewel <command> [options]");
+  console.log(
+    "       crewel              Launch team UI (or prompt to init if no config)"
+  );
+  console.log(
+    "       crewel init         Interactive setup: team size, agents, lead"
+  );
   console.log("");
   console.log("Commands:");
+  console.log(
+    "  init                                    Interactive team setup"
+  );
   console.log(
     "  team create <name> --lead <type> --teammates <type>:<count>,..."
   );
@@ -474,10 +485,43 @@ async function teamCloseout(ctx: CliContext, args: string[]): Promise<number> {
   return 0;
 }
 
+async function runInit(ctx: CliContext, _args: string[]): Promise<number> {
+  void _args;
+  return runInitWizard(ctx.repoRoot);
+}
+
 export async function runCli(argv: string[], ctx: CliContext): Promise<number> {
   const [command, subcommand, ...rest] = argv;
   try {
-    if (!command || command === "--help" || command === "-h") {
+    if (!command) {
+      // No args: launch if configured, otherwise prompt to init
+      const hasConfig = await ensureCrewelConfig(ctx.repoRoot);
+      if (!hasConfig) {
+        console.log("No crewel team found in this repo.");
+        console.log(
+          'Run "crewel init" to set up your team (lead, teammates, sizes).'
+        );
+        // Offer to init now if interactive
+        if (process.stdin.isTTY) {
+          const { createInterface } = await import("node:readline/promises");
+          const rl = createInterface({
+            input: process.stdin,
+            output: process.stdout,
+          });
+          const answer = await rl.question("Run crewel init now? [Y/n]: ");
+          rl.close();
+          if (/^y(es)?$/i.test(answer.trim()) || answer.trim() === "") {
+            return runInitWizard(ctx.repoRoot);
+          }
+        }
+        return 0;
+      }
+      return launchTeamUI(ctx.repoRoot);
+    }
+    if (command === "init") {
+      return runInit(ctx, rest);
+    }
+    if (command === "--help" || command === "-h") {
       printHelp();
       return 0;
     }

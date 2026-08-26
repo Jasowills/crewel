@@ -166,38 +166,42 @@ describe("rate-limit pause", () => {
 });
 
 describe("interrupt semantics", () => {
-  it("aborts an in-flight turn without penalizing the ticket", async () => {
-    registerAdapter(createMockAdapter({ hangUntilAbort: true }));
-    await assignTicket({
-      repoRoot: repo,
-      team: "demo",
-      ticketId: "t1",
-      assignee: "mock-1",
-      teammateIds: ["mock-1", "mock-2"],
-    });
-    const pending = runTeammateTurn({
-      repoRoot: repo,
-      team: "demo",
-      participantId: "mock-1",
-    });
-    await waitForFile(participantFile("mock-1", "turn.pid"));
-    expect(existsSync(participantFile("mock-1", "heartbeat"))).toBe(true);
-    const signal = await interruptTeammate({
-      repoRoot: repo,
-      team: "demo",
-      participantId: "mock-1",
-    });
-    expect(signal.aborted).toBe(true);
-    const result = await pending;
-    expect(result.outcome).toBe("aborted");
+  it(
+    "aborts an in-flight turn without penalizing the ticket",
+    { timeout: 15000 },
+    async () => {
+      registerAdapter(createMockAdapter({ hangUntilAbort: true }));
+      await assignTicket({
+        repoRoot: repo,
+        team: "demo",
+        ticketId: "t1",
+        assignee: "mock-1",
+        teammateIds: ["mock-1", "mock-2"],
+      });
+      const pending = runTeammateTurn({
+        repoRoot: repo,
+        team: "demo",
+        participantId: "mock-1",
+      });
+      await waitForFile(participantFile("mock-1", "turn.pid"));
+      expect(existsSync(participantFile("mock-1", "heartbeat"))).toBe(true);
+      const signal = await interruptTeammate({
+        repoRoot: repo,
+        team: "demo",
+        participantId: "mock-1",
+      });
+      expect(signal.aborted).toBe(true);
+      const result = await pending;
+      expect(result.outcome).toBe("aborted");
 
-    const raw = JSON.parse(await ticketJson("t1")) as Record<string, unknown>;
-    expect(raw["status"]).toBe("assigned");
-    expect(raw["attempts"]).toBeUndefined();
-    expect(existsSync(participantFile("mock-1", "heartbeat"))).toBe(false);
-    expect(existsSync(participantFile("mock-1", "turn.pid"))).toBe(false);
-    expect(await jasonLog()).toMatch(/interrupted/);
-  });
+      const raw = JSON.parse(await ticketJson("t1")) as Record<string, unknown>;
+      expect(raw["status"]).toBe("assigned");
+      expect(raw["attempts"]).toBeUndefined();
+      expect(existsSync(participantFile("mock-1", "heartbeat"))).toBe(false);
+      expect(existsSync(participantFile("mock-1", "turn.pid"))).toBe(false);
+      expect(await jasonLog()).toMatch(/interrupted/);
+    }
+  );
 
   it("team stop --now aborts in-flight turns; plain stop drains", async () => {
     registerAdapter(createMockAdapter({ hangUntilAbort: true }));

@@ -1,5 +1,9 @@
 # crewel
 
+[![npm version](https://img.shields.io/npm/v/crewel.svg)](https://www.npmjs.com/package/crewel)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node >=20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
+
 > A mixed crew of coding agents, stitched together on one ticket board.
 
 Like crewel embroidery — many differently-colored threads worked into a single
@@ -9,13 +13,34 @@ tickets, teammates execute them independently in isolated git worktrees, and
 everyone coordinates through a shared, human-readable state layer with live
 notifications.
 
+**Why Crewel?** Existing multi-agent tools are single-vendor (Claude Code teams run only Claude, Gas Town runs only one type). Crewel is agent-agnostic — an OpenCode teammate can work alongside a Claude Code teammate and a Codex teammate on the same board, with the same protocol. Every teammate is configured as a senior/principal engineer: it pushes back on unclear tickets via `needs-clarification` instead of guessing.
+
+**Features**
+
+- **Cross-agent teams** — mix OpenCode, Claude Code, Codex (or `mock` for dry runs) in one team
+- **Ticket-driven, not todo-list** — status, assignee, dependencies, acceptance criteria; `needs-clarification` is a first-class state
+- **Isolated worktrees** — `crewel/{team}/integration` + per-teammate branches; `main` is never touched until close-out
+- **Live push, not poll** — `team watch` streams board/mail/`jason.log` via `fs.watch`
+- **Resilient** — interrupt, stall watchdog, rate-limit auto-pause, freeze after 3 failures, hybrid reassign only on clean worktrees
+- **Human-readable state** — everything under `.crewel/` is `cat`-able JSON/Markdown
+
 ## Quickstart
 
 ```sh
 # Install (requires Node >=20)
 npm install -g crewel
 
-# In a git repo with at least one commit
+# In a git repo with at least one commit — interactive setup
+crewel init
+# Team name [my-app]: demo
+# How many mock teammates? (0-5) [0]: 2
+# How many opencode teammates? (0-5) [0]: 0
+# How many claude-code teammates? (0-5) [0]: 0
+# How many codex teammates? (0-5) [0]: 0
+# Pick team lead / orchestrator (mock, opencode, claude-code, codex) [mock]: mock
+# ✓ team "demo" ready
+
+# Or non-interactive:
 crewel team create demo --lead mock --teammates mock:2
 # created team "demo"
 #   lead:      mock
@@ -60,6 +85,21 @@ crewel team status
 #   board:     open 0 · assigned 0 · in-progress 0 · needs-clarification 0 · in-review 0 · blocked 0 · done 1
 ```
 
+Launch the team — 6 panes, lead focused (works on Windows and macOS):
+
+```sh
+crewel
+# Launching crewel team "demo"
+#   lead:      mock (focused)
+#   teammates: mock-1 (mock), mock-2 (mock)
+# Layout: lead 58% left (focused) | teammates 2+2+1 grid right
+# Tip: start prompting the lead. Other panes will stream live.
+
+# If no team exists, crewel prompts to init:
+# No crewel team found in this repo.
+# Run "crewel init" to set up your team (lead, teammates, sizes).
+```
+
 Direct mode above bypasses the lead. For the headline experience, let the lead decompose a request:
 
 ```sh
@@ -67,7 +107,7 @@ crewel team run --request "Add a login flow per docs/spec.md"
 # ✓ decomposed into 3 tickets: auth-schema, login-route, login-tests
 ```
 
-Live board and notifications:
+Live board and notifications (also visible inside the launched UI):
 
 ```sh
 crewel team watch
