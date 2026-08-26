@@ -95,6 +95,11 @@ crewel
 # Layout: lead 58% left (focused) | teammates 2+2+1 grid right
 # Tip: start prompting the lead. Other panes will stream live.
 
+# In the lead pane, type a request:
+# lead> Add a login flow per docs/spec.md
+# ✓ decomposed into 3 tickets: auth-schema, login-route, login-tests
+# The lead delegates, reviews, and pushes — you just prompt the lead.
+
 # If no team exists, crewel prompts to init:
 # No crewel team found in this repo.
 # Run "crewel init" to set up your team (lead, teammates, sizes).

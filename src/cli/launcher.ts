@@ -53,6 +53,9 @@ export async function launchTeamUI(repoRoot: string): Promise<number> {
     leadBox.add(leadTerm);
     root.add(leadBox);
 
+    // Lead REPL — the only place the user types requests
+    const leadScript = new URL("./lead-repl.js", import.meta.url).pathname;
+
     const right = new BoxRenderable(renderer as any, {
       flexDirection: "column",
       flexGrow: 1,
@@ -105,18 +108,32 @@ export async function launchTeamUI(repoRoot: string): Promise<number> {
       return p;
     };
 
-    // Lead pane
-    const leadPty = spawnForPane(
-      leadTerm,
-      `LEAD ${active.config.lead.type}`,
-      leadCwd,
-      80,
-      24
-    );
+    // Lead pane — runs the lead REPL (user's only input)
+    const leadPty = (() => {
+      const p = pty.spawn("node", [leadScript, repoRoot, active.config.name], {
+        name: "xterm-256color",
+        cols: 80,
+        rows: 24,
+        cwd: leadCwd,
+        env: {
+          ...(process.env as Record<string, string>),
+          TERM: "xterm-256color",
+          COLORTERM: "truecolor",
+        },
+      });
+      leadTerm.onData = (data) => p.write(data as unknown as string);
+      leadTerm.onTerminalResize = (cols, rows) => p.resize(cols, rows);
+      p.onData((data) => leadTerm.write(data));
+      p.write(
+        `\r\n\x1b[1mLEAD ${active.config.lead.type}\x1b[0m — ${leadCwd}\r\n`
+      );
+      return p;
+    })();
     ptys.push(leadPty);
     leadTerm.focus();
 
-    // Teammate panes
+    // Teammate panes — each in its isolated worktree (fallback to repoRoot if not yet provisioned)
+    const { existsSync } = await import("node:fs");
     teammates.forEach((m, idx) => {
       const row = rows[Math.floor(idx / 2)] ?? rows[2]!;
       const box = new BoxRenderable(renderer as any, {
@@ -130,7 +147,8 @@ export async function launchTeamUI(repoRoot: string): Promise<number> {
       box.add(term);
       row.add(box);
       allTerms.push(term);
-      const cwd = worktreePathFor(repoRoot, active.config.name, m.id);
+      const wt = worktreePathFor(repoRoot, active.config.name, m.id);
+      const cwd = existsSync(wt) ? wt : repoRoot;
       const p = spawnForPane(term, `${m.id}`, cwd, 80, 12);
       ptys.push(p);
     });
