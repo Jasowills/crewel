@@ -3,35 +3,52 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>crewel — a mixed crew of coding agents, stitched together</title>
+    <title>crewel — your coding agents, on the board</title>
     <meta
       name="description"
       content="A mixed crew of coding agents, stitched together on one ticket board. Cross-agent team orchestrator for OpenCode, Claude Code and Codex."
     />
+    <!--
+DESIGN CONTRACT — split-flap concourse (seed 41bf69cf, chosen: signals-instruments-split-flap-concourse)
+THESIS: The departure board IS the product. A crewel team is a roster of live
+agents whose state flips in public; the page refuses the hero-plus-cards
+landing by making every claim a row on one board.
+OWN-WORLD: matte black flap faces (#141414) with painted white glyphs in fixed
+cells, brushed-steel frame (#B8B4AC) as ground, signal amber lamps (#FFB000)
+for attention, dim red (#C0392B) only for blocked. One condensed sans (Archivo
+Expanded caps for headers, Archivo for body), characters locked to cells.
+STORY: visitor reads the board like a traveler — lead + teammates as rows,
+state as lamp + flap text, npm command as the one departure worth catching.
+FIRST VIEWPORT: full-bleed dark concourse; top = brand row + install strip;
+center = the live board (LEAD row amber-lit, teammate rows flipping through
+states); bottom edge = platform cells.
+FORM: assigned candidate 7 fused with challenger "split-flap" — the roll's
+grounded direction carries structure; the flap grammar supplies surface.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md.
+-->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=General+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Expanded:wght@600;700&display=swap"
       rel="stylesheet"
     />
     <style>
       @font-face {
-        font-family: "General Sans";
-        src: local("General Sans"), local("GeneralSans-Regular");
-        font-display: swap;
+        font-family: "Archivo Expanded";
+        src: local("Archivo Expanded");
       }
       :root {
-        --paper: #f8f6f1;
-        --ink: #0f0e0c;
-        --ink-2: #1a1816;
-        --line: rgba(15, 14, 12, 0.08);
-        --line-strong: rgba(15, 14, 12, 0.14);
-        --brass: #8c6a3c;
-        --brass-2: #6b4f2a;
-        --cream: #f5f1e8;
-        --stone: rgba(15, 14, 12, 0.56);
-        --stone-faint: rgba(15, 14, 12, 0.32);
-        --radius: 16px;
+        --void: #0d0d0d;
+        --flap: #1a1a1a;
+        --flap-top: #222222;
+        --flap-edge: #000000;
+        --paint: #f2f0eb;
+        --paint-dim: #8a8880;
+        --steel: #b8b4ac;
+        --steel-dark: #8e8a82;
+        --amber: #ffb000;
+        --blocked: #c0392b;
+        --done: #7ba05b;
       }
       * {
         box-sizing: border-box;
@@ -41,492 +58,581 @@
       }
       body {
         margin: 0;
-        background: var(--paper);
-        color: var(--ink);
-        font-family: "General Sans", "Instrument Sans", system-ui, sans-serif;
+        background: var(--void);
+        color: var(--paint);
+        font-family: "Archivo", system-ui, sans-serif;
         -webkit-font-smoothing: antialiased;
-        line-height: 1.6;
+        line-height: 1.5;
       }
       a {
         color: inherit;
         text-decoration: none;
       }
       .wrap {
-        max-width: 1160px;
+        max-width: 1200px;
         margin: 0 auto;
-        padding: 0 24px;
+        padding: 0 20px;
       }
       @media (min-width: 900px) {
         .wrap {
-          padding: 0 32px;
+          padding: 0 36px;
         }
       }
+      ::selection {
+        background: var(--amber);
+        color: var(--void);
+      }
+
+      /* ── Header: steel frame strip ── */
       .header {
         position: sticky;
         top: 0;
-        z-index: 20;
-        background: rgba(248, 246, 241, 0.92);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--line);
+        z-index: 30;
+        background: linear-gradient(180deg, #3a3a38, #2a2a28);
+        border-bottom: 3px solid #1a1a18;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
       }
       .header-inner {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 64px;
+        height: 56px;
       }
       .brand {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
+        font-family: "Archivo Expanded", "Archivo", sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.22em;
         text-transform: uppercase;
-        font-size: 12px;
+        color: var(--paint);
       }
-      .brand-mark {
-        width: 28px;
-        height: 28px;
-        border-radius: 6px;
-        background: var(--ink);
-        color: var(--paper);
-        display: grid;
-        place-items: center;
-        font-family: "Cormorant Garamond", serif;
-        font-size: 16px;
-        font-weight: 600;
+      .brand .lamp {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--amber);
+        box-shadow:
+          0 1px 3px rgba(0, 0, 0, 0.8),
+          inset 0 1px 0 rgba(255, 255, 255, 0.35);
       }
       .nav {
         display: flex;
         align-items: center;
-        gap: 18px;
-        font-size: 14px;
-      }
-      .nav a {
-        opacity: 0.62;
+        gap: 22px;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--paint-dim);
       }
       .nav a:hover {
-        opacity: 1;
+        color: var(--paint);
       }
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 18px;
-        border-radius: 999px;
-        background: var(--ink);
-        color: var(--paper);
-        font-weight: 600;
-        font-size: 14px;
-        border: 1px solid var(--ink);
-        transition:
-          opacity 0.15s,
-          transform 0.15s;
+      .nav .cta-chip {
+        background: var(--amber);
+        color: var(--void);
+        padding: 8px 16px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        border-radius: 3px;
       }
-      .btn:hover {
-        opacity: 0.92;
-        transform: translateY(-1px);
+      .nav .cta-chip:hover {
+        background: #ffc233;
       }
-      .btn-ghost {
-        background: transparent;
-        color: var(--ink);
-        border: 1px solid var(--line-strong);
-      }
-      .btn-ghost:hover {
-        background: var(--ink);
-        color: var(--paper);
-      }
+
+      /* ── Hero: the concourse ── */
       .hero {
-        padding: 48px 0 40px;
-        border-bottom: 1px solid var(--line);
+        padding: 40px 0 0;
       }
-      .hero-grid {
-        display: grid;
-        gap: 32px;
-      }
-      @media (min-width: 900px) {
-        .hero-grid {
-          grid-template-columns: 1.05fr 0.95fr;
-          align-items: center;
-        }
-      }
-      .hero h1 {
-        font-family: "Cormorant Garamond", serif;
-        font-size: clamp(44px, 5.6vw, 68px);
-        line-height: 0.92;
-        font-weight: 600;
-        letter-spacing: -0.03em;
-        margin: 0 0 16px;
-      }
-      .hero h1 i {
-        font-style: italic;
-        font-weight: 500;
-        color: var(--brass);
-      }
-      .hero .sub {
-        max-width: 560px;
-        color: var(--stone);
-        font-size: 17px;
-        line-height: 1.6;
-        margin: 0 0 24px;
-      }
-      .install {
+      .hero-top {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        background: white;
-        border: 1px solid var(--line-strong);
-        border-radius: 999px;
-        padding: 8px 8px 8px 16px;
-        max-width: 520px;
-        box-shadow: 0 8px 24px rgba(15, 14, 12, 0.06);
+        gap: 24px;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 28px;
       }
-      .install code {
-        flex: 1;
+      .hero h1 {
+        font-family: "Archivo Expanded", "Archivo", sans-serif;
+        font-size: clamp(34px, 5vw, 58px);
+        line-height: 0.95;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+        margin: 0;
+        max-width: 720px;
+      }
+      .hero h1 .thin {
+        font-family: "Archivo", sans-serif;
+        font-weight: 400;
+        color: var(--paint-dim);
+        text-transform: none;
+        letter-spacing: 0;
+        display: block;
+        font-size: 0.55em;
+        margin-top: 10px;
+      }
+      .install-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+        align-items: stretch;
+        border: 2px solid #3a3a38;
+        background: #161616;
+        min-width: min(480px, 100%);
+      }
+      .install-label {
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        font-family: "Archivo Expanded", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--void);
+        background: var(--steel);
+      }
+      .install-strip code {
         font-family: "JetBrains Mono", monospace;
-        font-size: 13px;
-        color: var(--ink);
+        font-size: 14px;
+        padding: 14px 16px;
+        color: var(--paint);
+        flex: 1;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       .copy {
-        font-family: "General Sans", sans-serif;
+        font-family: "Archivo Expanded", sans-serif;
         font-size: 11px;
-        letter-spacing: 0.08em;
+        font-weight: 700;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        padding: 8px 12px;
-        border-radius: 999px;
-        border: 1px solid var(--line-strong);
-        background: var(--ink);
-        color: white;
+        padding: 0 18px;
+        background: var(--flap);
+        color: var(--paint);
+        border: none;
+        border-left: 2px solid #3a3a38;
         cursor: pointer;
-        font-weight: 600;
       }
       .copy:hover {
-        opacity: 0.9;
+        background: var(--amber);
+        color: var(--void);
       }
-      .hero-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 14px;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 10px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--stone-faint);
-      }
-      .hero-meta span {
-        border: 1px solid var(--line);
-        padding: 4px 8px;
-        border-radius: 999px;
-        background: white;
-      }
-      .hero-visual {
-        position: relative;
-        background: white;
-        border: 1px solid var(--line-strong);
-        border-radius: 20px;
-        overflow: hidden;
+
+      /* ── THE BOARD ── */
+      .board-frame {
+        border: 3px solid #3a3a38;
+        border-radius: 6px;
+        background: #050505;
+        padding: 14px;
         box-shadow:
-          0 24px 48px rgba(15, 14, 12, 0.08),
-          0 8px 16px rgba(15, 14, 12, 0.04);
+          inset 0 2px 0 rgba(255, 255, 255, 0.04),
+          0 30px 60px rgba(0, 0, 0, 0.6);
+        position: relative;
       }
-      .hero-visual-head {
+      .board-frame::after {
+        /* brushed steel feet */
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -14px;
+        transform: translateX(-50%);
+        width: 180px;
+        height: 10px;
+        background: linear-gradient(180deg, #4a4a48, #2a2a28);
+        border-radius: 0 0 4px 4px;
+      }
+      .board-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 4px 12px;
+        font-family: "Archivo Expanded", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--paint-dim);
+      }
+      .board-head .live {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--line);
-        background: #fcfbf8;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 10px;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--stone-faint);
+        gap: 8px;
+        color: var(--amber);
       }
-      .dots {
-        display: flex;
-        gap: 6px;
-      }
-      .dots i {
+      .board-head .live i {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        display: block;
+        background: var(--amber);
+        box-shadow:
+          0 1px 3px rgba(0, 0, 0, 0.85),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        animation: lampPulse 2s infinite;
       }
-      .dots i:nth-child(1) {
-        background: #e8e6e1;
-        border: 1px solid var(--line);
+      @keyframes lampPulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.35;
+        }
       }
-      .dots i:nth-child(2) {
-        background: #e8e6e1;
-        border: 1px solid var(--line);
+      @media (prefers-reduced-motion: reduce) {
+        .board-head .live i {
+          animation: none;
+        }
       }
-      .dots i:nth-child(3) {
-        background: var(--brass);
-      }
-      .video-stage {
-        aspect-ratio: 16/10;
-        background: #0f0e0c;
-        position: relative;
-        overflow: hidden;
+
+      .row {
         display: grid;
-        place-items: center;
-        padding: 18px;
+        grid-template-columns: 44px 110px 1fr 130px 90px;
+        gap: 3px;
+        margin-bottom: 3px;
       }
-      .terminal-mock {
-        width: 100%;
-        max-width: 640px;
-        background: #14120f;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
+      .cell {
+        position: relative;
+        background: var(--flap);
+        border-radius: 0;
+        padding: 12px 14px;
         overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        line-height: 1.25;
+        color: var(--paint);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-shadow:
+          inset 0 -2px 0 var(--flap-edge),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
       }
-      .term-head {
+      /* flap hinge line */
+      .cell::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+        background: rgba(0, 0, 0, 0.55);
+      }
+      .cell.head {
+        background: transparent;
+        box-shadow: none;
+        font-family: "Archivo Expanded", sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--paint-dim);
+        padding: 6px 14px;
+      }
+      .cell.lamp-cell {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        background: #1a1816;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        font-family: "JetBrains Mono", monospace;
-        font-size: 10px;
-        color: rgba(255, 255, 255, 0.4);
+        padding: 12px 10px;
       }
-      .term-body {
-        padding: 14px 14px 14px;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 11px;
-        line-height: 1.6;
-        color: #f5f1e8;
+      .lamp {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #333;
+      }
+      .lamp.amber {
+        background: var(--amber);
+        box-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(255, 200, 80, 0.5);
+      }
+      .lamp.done {
+        background: var(--done);
+        box-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(180, 220, 150, 0.4);
+      }
+      .lamp.blocked {
+        background: var(--blocked);
+        box-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(230, 120, 100, 0.4);
+      }
+      .cell.agent-name {
+        font-family: "Archivo Expanded", sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-size: 12px;
+      }
+      .cell.task .dim {
+        color: var(--paint-dim);
+      }
+      .cell.state {
         text-align: left;
       }
-      .term-body .dim {
-        color: rgba(245, 241, 232, 0.38);
+      .tag {
+        font-family: "Archivo Expanded", sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
       }
-      .term-body .gold {
-        color: #c9a86a;
+      .tag.idle {
+        color: var(--paint-dim);
       }
-      .term-body .line {
-        opacity: 0;
-        transform: translateY(4px);
-        animation: appear 0.5s forwards;
+      .tag.working {
+        color: var(--amber);
       }
-      .term-body .line:nth-child(1) {
-        animation-delay: 0.2s;
+      .tag.done-tag {
+        color: var(--done);
       }
-      .term-body .line:nth-child(2) {
-        animation-delay: 0.6s;
+      .tag.blocked-tag {
+        color: var(--blocked);
       }
-      .term-body .line:nth-child(3) {
-        animation-delay: 1s;
+
+      /* flipping animation */
+      .flip {
+        animation: flipCascade 0.09s steps(2) 3;
       }
-      .term-body .line:nth-child(4) {
-        animation-delay: 1.4s;
-      }
-      .term-body .line:nth-child(5) {
-        animation-delay: 1.8s;
-      }
-      @keyframes appear {
-        to {
-          opacity: 1;
-          transform: none;
+      @keyframes flipCascade {
+        0% {
+          filter: brightness(0.4);
+        }
+        50% {
+          filter: brightness(1.35);
+        }
+        100% {
+          filter: brightness(1);
         }
       }
-      .play {
-        position: absolute;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: white;
-        color: var(--ink);
-        display: grid;
-        place-items: center;
-        font-size: 18px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        cursor: pointer;
-        transition: transform 0.15s;
-        z-index: 2;
+      @media (prefers-reduced-motion: reduce) {
+        .flip {
+          animation: none;
+        }
       }
-      .play:hover {
-        transform: scale(1.06);
-      }
-      .video-caption {
-        padding: 10px 16px;
-        font-size: 12px;
-        color: var(--stone);
-        border-top: 1px solid var(--line);
-        background: #fcfbf8;
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
+
+      /* ── Sections between boards ── */
       .section {
-        padding: 64px 0;
-        border-bottom: 1px solid var(--line);
+        padding: 72px 0;
       }
-      .section h2 {
-        font-family: "Cormorant Garamond", serif;
-        font-size: 38px;
-        line-height: 0.9;
-        letter-spacing: -0.02em;
-        margin: 0 0 10px;
-      }
-      .section h2 i {
-        font-style: italic;
-        color: var(--brass);
-        font-weight: 500;
-      }
-      .section .lead {
-        color: var(--stone);
-        max-width: 600px;
-        margin: 0 0 32px;
-        font-size: 17px;
-      }
-      .grid {
+      .kicker-row {
         display: grid;
-        gap: 16px;
+        grid-template-columns: auto 1fr;
+        gap: 20px;
+        align-items: baseline;
+        margin-bottom: 36px;
       }
-      @media (min-width: 700px) {
-        .grid-3 {
-          grid-template-columns: repeat(3, 1fr);
-        }
-      }
-      @media (min-width: 700px) {
-        .grid-4 {
-          grid-template-columns: repeat(4, 1fr);
-        }
-      }
-      @media (min-width: 900px) {
-        .how {
-          grid-template-columns: 1fr 1.6fr;
-          align-items: start;
-        }
-      }
-      .card {
-        background: white;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        padding: 20px;
-      }
-      .card h3 {
-        margin: 0 0 6px;
-        font-size: 15px;
+      .kicker-row h2 {
+        font-family: "Archivo Expanded", "Archivo", sans-serif;
+        font-size: clamp(26px, 3.4vw, 42px);
         letter-spacing: -0.01em;
-      }
-      .card p {
+        text-transform: uppercase;
         margin: 0;
-        color: var(--stone);
-        font-size: 14px;
-        line-height: 1.6;
-      }
-      .card .icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: grid;
-        place-items: center;
-        background: var(--paper);
-        border: 1px solid var(--line);
-        color: var(--brass);
-        margin-bottom: 12px;
-        font-size: 14px;
-      }
-      .agent {
-        text-align: center;
-        padding: 22px 16px;
-      }
-      .agent .logo {
-        width: 48px;
-        height: 48px;
-        margin: 0 auto 12px;
-        border-radius: 12px;
-        display: grid;
-        place-items: center;
-        background: var(--ink);
-        color: white;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 12px;
-        letter-spacing: 0.06em;
-        font-weight: 600;
-      }
-      .agent h3 {
-        font-size: 14px;
-        margin: 0 0 4px;
-      }
-      .agent p {
-        font-size: 12px;
-        color: var(--stone-faint);
-        line-height: 1.5;
-      }
-      .agent.featured {
-        background: var(--ink);
-        color: var(--paper);
-        border-color: var(--ink);
-      }
-      .agent.featured .logo {
-        background: white;
-        color: var(--ink);
-      }
-      .agent.featured p {
-        color: rgba(245, 241, 232, 0.62);
-      }
-      .agent.featured h3 {
-        color: var(--paper);
-      }
-      .cta {
-        background: var(--ink);
-        color: var(--paper);
-        border-radius: 20px;
-        padding: 28px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 18px;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .cta h3 {
-        font-family: "Cormorant Garamond", serif;
-        font-size: 28px;
         line-height: 1;
-        margin: 0;
-        color: var(--paper);
       }
-      .cta p {
-        margin: 6px 0 0;
-        color: rgba(245, 241, 232, 0.6);
+      .kicker-row p {
+        margin: 0;
+        color: var(--paint-dim);
         max-width: 520px;
       }
-      .cta .btn {
-        background: var(--paper);
-        color: var(--ink);
+
+      .steps {
+        display: grid;
+        gap: 3px;
       }
-      .cta .btn:hover {
-        background: white;
+      .step {
+        display: grid;
+        grid-template-columns: 70px 220px 1fr;
+        gap: 3px;
       }
-      .footer {
-        padding: 28px 0;
-        color: var(--stone-faint);
+      @media (max-width: 800px) {
+        .step {
+          grid-template-columns: 60px 1fr;
+        }
+        .step .desc {
+          grid-column: 1/-1;
+          padding-left: 63px;
+        }
+      }
+      .step .num {
+        background: var(--steel);
+        color: var(--void);
+        font-family: "Archivo Expanded", sans-serif;
+        font-weight: 700;
+        font-size: 22px;
+        display: grid;
+        place-items: center;
+        box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+      }
+      .step .what {
+        background: var(--flap);
+        padding: 14px 16px;
+        font-family: "Archivo Expanded", sans-serif;
+        font-weight: 700;
         font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        box-shadow: inset 0 -2px 0 var(--flap-edge);
+      }
+      .step .desc {
+        background: var(--flap);
+        padding: 14px 16px;
+        font-size: 14px;
+        color: var(--paint);
+        display: flex;
+        align-items: center;
+        box-shadow: inset 0 -2px 0 var(--flap-edge);
+      }
+      .step .desc code {
+        color: var(--amber);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+      }
+
+      .agents-grid {
+        display: grid;
+        gap: 3px;
+        grid-template-columns: repeat(4, 1fr);
+      }
+      @media (max-width: 800px) {
+        .agents-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      .agent-card {
+        background: var(--flap);
+        padding: 20px 16px;
+        box-shadow: inset 0 -2px 0 var(--flap-edge);
+      }
+      .agent-card.featured {
+        outline: 2px solid var(--amber);
+        outline-offset: -2px;
+      }
+      .agent-card .code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--paint-dim);
+        letter-spacing: 0.1em;
+      }
+      .agent-card h3 {
+        font-family: "Archivo Expanded", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 8px 0 6px;
+      }
+      .agent-card p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--paint-dim);
+        line-height: 1.5;
+      }
+      .agent-card .lamp {
+        margin-bottom: 12px;
+      }
+      .agent-card.featured .lamp {
+        background: var(--amber);
+        box-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(255, 200, 80, 0.5);
+      }
+
+      /* CTA board */
+      .final-board {
+        border: 3px solid #3a3a38;
+        border-radius: 6px;
+        background: #050505;
+        padding: 26px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+      }
+      .final-board .msg {
+        font-family: "Archivo Expanded", "Archivo", sans-serif;
+        font-size: clamp(22px, 3vw, 32px);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        line-height: 1.05;
+        margin: 0;
+      }
+      .final-board .msg .amber {
+        color: var(--amber);
+      }
+      .final-board .actions {
+        display: flex;
+        gap: 3px;
+        flex-wrap: wrap;
+      }
+      .big-flap {
+        display: inline-block;
+        padding: 16px 26px;
+        background: var(--amber);
+        color: var(--void);
+        font-family: "Archivo Expanded", sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35);
+      }
+      .big-flap:hover {
+        background: #ffc233;
+      }
+      .big-flap.ghost {
+        background: var(--flap);
+        color: var(--paint);
+        box-shadow: inset 0 -3px 0 var(--flap-edge);
+      }
+      .big-flap.ghost:hover {
+        background: var(--flap-top);
+      }
+
+      footer {
+        padding: 32px 0;
+        color: var(--paint-dim);
+        font-size: 12px;
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
         justify-content: space-between;
-        border-top: 1px solid var(--line);
+        font-family: "JetBrains Mono", monospace;
+        letter-spacing: 0.04em;
+      }
+      footer a:hover {
+        color: var(--paint);
+      }
+
+      @media (max-width: 700px) {
+        .row {
+          grid-template-columns: 36px 1fr 90px;
+        }
+        .cell.task {
+          display: none;
+        }
+        .nav a:not(.cta-chip) {
+          display: none;
+        }
       }
     </style>
   </head>
   <body>
     <header class="header">
       <div class="wrap header-inner">
-        <div class="brand"><span class="brand-mark">C</span> crewel</div>
+        <div class="brand"><span class="lamp"></span> CREWEL</div>
         <nav class="nav">
-          <a href="#how">How it works</a>
+          <a href="#board">The Board</a>
           <a href="#agents">Agents</a>
           <a
             href="https://github.com/Jasowills/crewel"
@@ -534,343 +640,328 @@
             rel="noopener"
             >GitHub</a
           >
-          <a class="btn" href="#install">Install</a>
+          <a class="cta-chip" href="#install">npm install -g crewel</a>
         </nav>
       </div>
     </header>
 
     <main>
-      <section class="hero">
-        <div class="wrap hero-grid">
+      <!-- ═══ HERO: THE DEPARTURE BOARD ═══ -->
+      <section class="hero wrap" id="board">
+        <div class="hero-top">
           <div>
             <h1>
-              A <i>mixed crew</i><br />of coding agents,<br />stitched together.
+              Your agents,<br />on the board.<span class="thin"
+                >One lead orchestrates. Teammates execute. Main stays
+                sacred.</span
+              >
             </h1>
-            <p class="sub">
-              Crewel turns your agents into a real team. One lead orchestrates.
-              Teammates work in isolated git worktrees on a shared board — live,
-              not polled. You prompt the lead; the crew delivers.
+          </div>
+          <div class="install-strip" id="install">
+            <span class="install-label">install</span>
+            <code id="npmCmd">npm install -g crewel</code>
+            <button class="copy" onclick="copyCmd()">copy</button>
+          </div>
+        </div>
+
+        <div class="board-frame">
+          <div class="board-head">
+            <span>Crewel · Team “demo” · repo my-app</span>
+            <span class="live"><i></i> LIVE — 6 PANES</span>
+          </div>
+
+          <div class="row">
+            <div class="cell head"></div>
+            <div class="cell head">Agent</div>
+            <div class="cell head">Assignment</div>
+            <div class="cell head">Worktree</div>
+            <div class="cell head">State</div>
+          </div>
+
+          <div class="row">
+            <div class="cell lamp-cell"><span class="lamp amber"></span></div>
+            <div class="cell agent-name">♦ LEAD</div>
+            <div class="cell task">
+              decomposing “login flow” → 3 tickets · reviewing mock-1
+            </div>
+            <div class="cell">
+              <span style="color: var(--paint-dim)">repo root</span>
+            </div>
+            <div class="cell state">
+              <span class="tag working">Orchestrating</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="cell lamp-cell"><span class="lamp amber"></span></div>
+            <div class="cell agent-name">MOCK-1</div>
+            <div class="cell task">
+              <span class="dim">T-102</span> auth-schema · tests green
+            </div>
+            <div class="cell">
+              <span style="color: var(--paint-dim)">crewel/demo/mock-1</span>
+            </div>
+            <div class="cell state">
+              <span class="tag working">Working</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="cell lamp-cell"><span class="lamp done"></span></div>
+            <div class="cell agent-name">MOCK-2</div>
+            <div class="cell task">
+              <span class="dim">T-101</span> login-route · merged to integration
+            </div>
+            <div class="cell">
+              <span style="color: var(--paint-dim)">crewel/demo/mock-2</span>
+            </div>
+            <div class="cell state">
+              <span class="tag done-tag">Done ✓</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="cell lamp-cell"><span class="lamp"></span></div>
+            <div class="cell agent-name">OPENCODE-1</div>
+            <div class="cell task">
+              <span class="dim">—</span> awaiting assignment
+            </div>
+            <div class="cell">
+              <span style="color: var(--paint-dim)">crewel/demo/oc-1</span>
+            </div>
+            <div class="cell state"><span class="tag idle">Idle</span></div>
+          </div>
+
+          <div class="row">
+            <div class="cell lamp-cell"><span class="lamp blocked"></span></div>
+            <div class="cell agent-name">CODEX-1</div>
+            <div class="cell task">
+              <span class="dim">T-103</span> rate limit — paused, resumes
+              automatically
+            </div>
+            <div class="cell">
+              <span style="color: var(--paint-dim)">crewel/demo/cx-1</span>
+            </div>
+            <div class="cell state">
+              <span class="tag blocked-tag">Paused</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="cell lamp-cell"><span class="lamp blocked"></span></div>
+            <div class="cell agent-name">CLAUDE-1</div>
+            <div class="cell task">
+              <span class="dim">T-104</span> “which DB — sqlite or pg?” → lead
+              answers
+            </div>
+            <div class="cell">
+              <span style="color: var(--paint-dim)">crewel/demo/cc-1</span>
+            </div>
+            <div class="cell state">
+              <span class="tag blocked-tag">Clarify</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ HOW IT WORKS ═══ -->
+      <section class="section wrap" id="how">
+        <div class="kicker-row">
+          <h2>How it works</h2>
+          <p>
+            Three commands. You never assign, tick, or merge by hand — the lead
+            does.
+          </p>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="num">1</div>
+            <div class="what">crewel init</div>
+            <div class="desc">
+              Wizard asks team size, which agents and how many, and picks the
+              orchestrator. Writes <code>crewel.json</code>.
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">2</div>
+            <div class="what">crewel</div>
+            <div class="desc">
+              Launches every pane at once — real PTYs, lead focused at 58% left,
+              teammates tiled right. ConPTY on Windows, forkpty on macOS.
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">3</div>
+            <div class="what">prompt the lead</div>
+            <div class="desc">
+              <code>Add a login flow per docs/spec.md</code> — the lead
+              decomposes into tickets, delegates round-robin, handles
+              needs-clarification, reviews, merges. You watch the board.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ AGENTS ═══ -->
+      <section class="section wrap" id="agents">
+        <div class="kicker-row">
+          <h2>The roster</h2>
+          <p>
+            Genuinely mixed teams — not locked to one vendor. One adapter file
+            adds another agent type.
+          </p>
+        </div>
+        <div class="agents-grid">
+          <div class="agent-card featured">
+            <div class="lamp amber"></div>
+            <div class="code">ADAPTER · 01</div>
+            <h3>OpenCode</h3>
+            <p>
+              Primary daily driver, held to the highest reliability bar. First
+              adapter built.
             </p>
-
-            <div class="install" id="install">
-              <code id="npmCmd">npm install -g crewel</code>
-              <button class="copy" onclick="copyCmd()">Copy</button>
-              <a
-                class="btn"
-                href="https://github.com/Jasowills/crewel#quickstart"
-                target="_blank"
-                rel="noopener"
-                style="padding: 8px 14px; font-size: 13px"
-                >Quickstart</a
-              >
-            </div>
-            <div class="hero-meta">
-              <span>Node ≥20</span><span>MIT</span
-              ><span>Windows &amp; macOS</span><span>Lead-only review</span>
-            </div>
           </div>
+          <div class="agent-card">
+            <div class="lamp done"></div>
+            <div class="code">ADAPTER · 02</div>
+            <h3>Claude Code</h3>
+            <p>
+              Headless <code>-p --output-format json</code>, typed api_retry
+              telemetry.
+            </p>
+          </div>
+          <div class="agent-card">
+            <div class="lamp done"></div>
+            <div class="code">ADAPTER · 03</div>
+            <h3>Codex</h3>
+            <p>
+              <code>exec --json</code> with output-schema enforcement, sandboxed
+              workspace writes.
+            </p>
+          </div>
+          <div class="agent-card">
+            <div class="lamp"></div>
+            <div class="code">ADAPTER · 00</div>
+            <h3>Mock</h3>
+            <p>Deterministic dry-runs for CI and tests. No LLM required.</p>
+          </div>
+        </div>
+      </section>
 
-          <div class="hero-visual" id="video">
-            <div class="video-stage" id="videoStage">
-              <div class="terminal-mock" aria-label="crewel 6-pane layout">
-                <div class="term-head">
-                  <span
-                    >crewel — demo • lead mock (focused) — 58% left | 2+2+1 grid
-                    right</span
-                  >
-                </div>
-                <div class="term-body">
-                  <div class="line">
-                    <span class="dim">$</span> crewel init
-                    <span class="dim">— demo • mock:2</span>
-                  </div>
-                  <div class="line">
-                    <span class="gold">✓</span> team "demo" ready
-                  </div>
-                  <div class="line"><span class="dim">$</span> crewel</div>
-                  <div class="line">
-                    <span class="gold">lead&gt;</span> Add a login flow per
-                    docs/spec.md
-                  </div>
-                  <div class="line">
-                    <span class="gold">✓</span> decomposed into 3 tickets —
-                    mock-1, mock-2 streaming…
-                  </div>
-                </div>
-              </div>
-              <div
-                class="play"
-                id="playBtn"
-                onclick="playVideo()"
-                title="Play video"
-                aria-label="Play video"
-              >
-                ▶
-              </div>
-              <video
-                id="hyperframesVideo"
-                style="
-                  display: none;
-                  position: absolute;
-                  inset: 0;
-                  width: 100%;
-                  height: 100%;
-                  object-fit: cover;
-                  background: #0f0e0c;
-                "
-                controls
-                playsinline
-                poster=""
-              ></video>
-            </div>
-            <div
-              style="
-                padding: 10px 16px;
-                font-size: 11px;
-                letter-spacing: 0.08em;
-                text-transform: uppercase;
-                color: var(--stone-faint);
-                font-family: &quot;JetBrains Mono&quot;, monospace;
-                display: flex;
-                justify-content: space-between;
-                gap: 12px;
-                flex-wrap: wrap;
-                border-top: 1px solid var(--line);
-                background: #fcfbf8;
-              "
+      <!-- ═══ RESILIENCE ═══ -->
+      <section class="section wrap">
+        <div class="kicker-row">
+          <h2>Built for senior teams</h2>
+          <p>
+            Tickets carry status, assignee, dependencies, acceptance criteria.
+            Pushback is protocol, not hope.
+          </p>
+        </div>
+        <div class="agents-grid" style="grid-template-columns: repeat(3, 1fr)">
+          <div class="agent-card">
+            <div class="code">ISOLATION</div>
+            <h3>Sacred main</h3>
+            <p>
+              Every teammate works <code>crewel/{team}/integration</code> +
+              per-teammate branches. Main is touched only by the lead’s
+              close-out PR.
+            </p>
+          </div>
+          <div class="agent-card">
+            <div class="code">NOTIFICATIONS</div>
+            <h3>Live, not polled</h3>
+            <p>
+              <code>fs.watch</code> pushes board, mail and jason.log the moment
+              they change. The board above is the product.
+            </p>
+          </div>
+          <div class="agent-card">
+            <div class="code">RESILIENCE</div>
+            <h3>Degrades gracefully</h3>
+            <p>
+              Interrupt, stall watchdog, rate-limit auto-pause, freeze after 3
+              failures. Worktrees are never auto-deleted.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ FINAL BOARD ═══ -->
+      <section class="section wrap">
+        <div class="final-board">
+          <div>
+            <p class="msg">Your crew is <span class="amber">boarding</span>.</p>
+            <p
+              style="color: var(--paint-dim); margin: 8px 0 0; max-width: 480px"
             >
-              <span>Hyperframes — 15s launch cut</span
-              ><span>16:9 • 15–25s</span>
-            </div>
+              One install. One prompt to the lead. Human-readable state under
+              <code>.crewel/</code> — no daemon, no dashboard required.
+            </p>
           </div>
-        </div>
-      </section>
-
-      <section class="section" id="how">
-        <div class="wrap">
-          <h2>How it <i>works</i></h2>
-          <p class="lead">
-            One prompt to the lead. The crew does the rest — isolated, live,
-            review-gated.
-          </p>
-          <div class="grid how">
-            <div class="card" style="position: sticky; top: 88px">
-              <h3>Single-entry</h3>
-              <p>
-                <code>crewel init</code> once. Then <code>crewel</code> with no
-                args launches the 6-pane UI with the lead focused. You type
-                once; the lead fans out.
-              </p>
-              <p
-                style="
-                  margin-top: 12px;
-                  color: var(--ink);
-                  font-family: &quot;JetBrains Mono&quot;, monospace;
-                  font-size: 11px;
-                "
-              >
-                crewel init → crewel → prompt lead
-              </p>
-            </div>
-            <div class="grid grid-3">
-              <div class="card">
-                <div class="icon">◈</div>
-                <h3>1 — Init</h3>
-                <p>
-                  Pick team size, agents and how many, and the orchestrator.
-                  Writes <code>crewel.json</code>.
-                </p>
-              </div>
-              <div class="card">
-                <div class="icon">⬢</div>
-                <h3>2 — Launch</h3>
-                <p>
-                  <code>crewel</code> spawns 6 real PTYs (ConPTY on Windows,
-                  forkpty on macOS) — lead 58% left, 2+2+1 grid right.
-                </p>
-              </div>
-              <div class="card">
-                <div class="icon">✦</div>
-                <h3>3 — Prompt the lead</h3>
-                <p>
-                  Lead decomposes into tickets, assigns round-robin, handles
-                  <code>needs-clarification</code>, reviews, and is the only one
-                  who merges to <code>main</code>.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" id="agents">
-        <div class="wrap">
-          <h2>Works with <i>your</i> agents</h2>
-          <p class="lead">Agent-agnostic — not locked to one vendor.</p>
-          <div class="grid grid-4">
-            <div class="card agent featured">
-              <div class="logo">OC</div>
-              <h3>OpenCode</h3>
-              <p>Primary daily driver. First adapter.</p>
-            </div>
-            <div class="card agent">
-              <div class="logo">CC</div>
-              <h3>Claude Code</h3>
-              <p>Headless <code>-p --output-format json</code></p>
-            </div>
-            <div class="card agent">
-              <div class="logo">CX</div>
-              <h3>Codex</h3>
-              <p><code>exec --json</code> sandboxed</p>
-            </div>
-            <div class="card agent">
-              <div class="logo">MK</div>
-              <h3>Mock</h3>
-              <p>Deterministic dry-runs for CI.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="wrap">
-          <h2>Built for <i>senior</i> teams</h2>
-          <p class="lead">
-            Real tickets, not a todo list. Senior-bar by contract.
-          </p>
-          <div class="grid grid-3">
-            <div class="card">
-              <div class="icon">⬣</div>
-              <h3>Isolated worktrees</h3>
-              <p>
-                Each teammate on <code>crewel/{team}/integration</code> +
-                per-teammate branches. Main untouched until close-out.
-              </p>
-            </div>
-            <div class="card">
-              <div class="icon">◎</div>
-              <h3>Live, not polled</h3>
-              <p>
-                <code>team watch</code> streams board and mail via
-                <code>fs.watch</code>.
-              </p>
-            </div>
-            <div class="card">
-              <div class="icon">◐</div>
-              <h3>Resilient</h3>
-              <p>
-                Interrupt, stall watchdog, rate-limit pause, freeze after 3
-                failures. Worktrees never auto-deleted.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" style="border-bottom: none">
-        <div class="wrap">
-          <div class="cta">
-            <div>
-              <h3>Ready to stitch your crew?</h3>
-              <p>
-                One command to install, one prompt to the lead. Human-readable
-                under <code>.crewel/</code>.
-              </p>
-            </div>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap">
-              <a
-                class="btn"
-                href="https://github.com/Jasowills/crewel"
-                target="_blank"
-                rel="noopener"
-                style="background: var(--paper); color: var(--ink)"
-                >View on GitHub →</a
-              >
-              <button
-                class="btn"
-                style="
-                  background: transparent;
-                  color: var(--paper);
-                  border: 1px solid rgba(255, 255, 255, 0.18);
-                "
-                onclick="copyCmd()"
-              >
-                Copy npm command
-              </button>
-            </div>
+          <div class="actions">
+            <a
+              class="big-flap"
+              href="https://github.com/Jasowills/crewel"
+              target="_blank"
+              rel="noopener"
+              >View source</a
+            >
+            <button class="big-flap ghost" onclick="copyCmd()">
+              Copy install
+            </button>
           </div>
         </div>
       </section>
     </main>
 
-    <footer class="footer wrap">
-      <span>© 2026 Crewel — MIT — Many threads, one fabric.</span>
+    <footer class="wrap">
+      <span>CREWEL © 2026 · MIT · many threads, one fabric</span>
       <span
         ><a href="https://github.com/Jasowills/crewel/blob/main/docs/PRD.md"
           >PRD</a
         >
-        ·
+        /
         <a
           href="https://github.com/Jasowills/crewel/blob/main/docs/DECISIONS.md"
-          >Decisions</a
+          >DECISIONS</a
         >
-        · <a href="https://www.npmjs.com/package/crewel">npm</a></span
+        / <a href="https://www.npmjs.com/package/crewel">NPM</a></span
       >
     </footer>
 
     <script>
       function copyCmd() {
-        const cmd = document.getElementById("npmCmd").textContent;
+        const cmd = "npm install -g crewel";
         navigator.clipboard.writeText(cmd).then(() => {
           document.querySelectorAll(".copy").forEach((b) => {
             const t = b.textContent;
-            b.textContent = "Copied!";
-            setTimeout(() => (b.textContent = t), 1400);
+            b.textContent = "copied ✓";
+            setTimeout(() => (b.textContent = t), 1200);
           });
         });
       }
-      async function playVideo() {
-        const video = document.getElementById("hyperframesVideo");
-        const mock = document.querySelector(".terminal-mock");
-        const btn = document.getElementById("playBtn");
-        // If a real Hyperframes render exists at site/brag-output/brag.mp4, use it
-        const candidates = [
-          "brag-output/brag.mp4",
-          "site/brag-output/brag.mp4",
-          "./brag.mp4",
-        ];
-        for (const src of candidates) {
-          try {
-            const res = await fetch(src, { method: "HEAD" });
-            if (res.ok) {
-              video.src = src;
-              video.style.display = "block";
-              mock.style.display = "none";
-              btn.style.display = "none";
-              video.play();
-              return;
+      // Flip cascade on scroll into view — the board animates once when first seen
+      const board = document.querySelector(".board-frame");
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              board.querySelectorAll(".cell").forEach((c, i) => {
+                if (c.classList.contains("head")) return;
+                setTimeout(() => {
+                  c.classList.add("flip");
+                  setTimeout(() => c.classList.remove("flip"), 300);
+                }, i * 45);
+              });
+              io.disconnect();
             }
-          } catch {}
-        }
-        // No video yet — animate the mock as a Hyperframes-style preview
-        btn.textContent = "◆";
-        btn.style.background = "var(--ink)";
-        btn.style.color = "white";
-        document.querySelectorAll(".term-body .line").forEach((el, i) => {
-          el.style.animation = "none";
-          el.offsetHeight;
-          el.style.animation = `appear .4s forwards ${i * 0.12}s`;
-        });
-        setTimeout(() => {
-          btn.textContent = "▶";
-          btn.style.background = "";
-          btn.style.color = "";
-        }, 900);
-      }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      io.observe(board);
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        document
-          .querySelectorAll(".term-body .line")
-          .forEach((el) => (el.style.animation = "none"));
+        io.disconnect();
       }
     </script>
   </body>
