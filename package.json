@@ -1,13 +1,32 @@
 {
   "name": "crewel",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A mixed crew of coding agents, stitched together on one ticket board.",
   "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=20"
   },
-  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anomalyco/crewel.git"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "orchestration",
+    "cli",
+    "crewel",
+    "team",
+    "opencode",
+    "claude-code",
+    "codex"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "bin": {
     "crewel": "dist/cli.js"
   },

@@ -38,7 +38,7 @@ interface CliContext {
   repoRoot: string;
 }
 
-const BOOLEAN_FLAGS = new Set(["now", "desktop"]);
+const BOOLEAN_FLAGS = new Set(["now", "desktop", "help"]);
 
 function parseArgs(args: string[]): {
   positionals: string[];
@@ -431,6 +431,10 @@ async function ticketUnfreeze(
 
 async function teamRun(ctx: CliContext, args: string[]): Promise<number> {
   const { positionals, flags } = parseArgs(args);
+  if (flags.has("help")) {
+    console.log('Usage: crewel team run --request "..." [--team <name>]');
+    return 0;
+  }
   const request = flags.get("request");
   if (!request) {
     console.error('error: team run needs --request "..."');
