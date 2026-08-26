@@ -4,10 +4,10 @@
 
 **Blocked by:** 08 Checkpoint merges & dependency rebases, 11 Lead decomposition mode.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] No merge without a recorded review pass
-- [ ] Configured checkCommand runs in the ticket worktree; failing it bounces the ticket to in-progress; unconfigured means no gate
-- [ ] Merged tickets' branches cleaned up only after merge
-- [ ] Archive writes a human-readable history snapshot into the target repo
-- [ ] Close-out PR opened integration→main, gated on Jason
+- [x] No merge without a recorded review pass
+- [x] Configured checkCommand runs in the ticket worktree; failing it bounces the ticket to in-progress; unconfigured means no gate
+- [x] Merged tickets' branches cleaned up only after merge
+- [x] Archive writes a human-readable history snapshot into the target repo
+- [x] Close-out PR opened integration→main, gated on Jason
