@@ -424,7 +424,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         max-width: 640px;
       }
 
-      /* agents — quiet rows */
+      /* agents — quiet rows + real marks */
       .rows {
         display: flex;
         flex-direction: column;
@@ -449,6 +449,37 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       .rowl.hot .dot {
         background: #fff;
         box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+      }
+      .logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(18px) saturate(1.1);
+        -webkit-backdrop-filter: blur(18px) saturate(1.1);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.14),
+          0 8px 24px rgba(0, 0, 0, 0.32);
+      }
+      .logo svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+        opacity: 0.92;
+      }
+      .rowl.hot .logo {
+        background: rgba(255, 255, 255, 0.11);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.2),
+          0 8px 28px rgba(0, 0, 0, 0.4),
+          0 0 0 1px rgba(255, 255, 255, 0.04);
+      }
+      .rowl.hot .logo svg {
+        opacity: 1;
       }
       .rowl h3 {
         margin: 0;
@@ -533,6 +564,39 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     </style>
   </head>
   <body>
+    <!-- monochrome logo sprite — actual marks, white on glass -->
+    <svg
+      aria-hidden="true"
+      width="0"
+      height="0"
+      style="position: absolute; overflow: hidden"
+    >
+      <symbol id="logo-opencode" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M22 24H2V0h20zM17 4.8H7v14.4h10z" />
+      </symbol>
+      <symbol id="logo-claude" viewBox="0 0 24 24">
+        <path
+          fill="currentColor"
+          d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0121-2.7325.2646-.7225.5343-.6246.7466-.3229.8076-.1215 3.4251-.2428 2.3558-.1882 2.3375-.176 2.0621-.1336.5699.0486.4378.2281.3886.3521.0242.4615-.3157.6557-.3886.4046-.5396.6193-1.3837 1.5353-2.1303 2.3132-.5396.6193-1.23 1.2554-.9762 1.0362-.5586-.091-.3097-.3521.0243-.7225.1214-.4046.4372-.8292.5829-1.1823 1.2636-2.2224.491-1.2554-.0486-.9938-.2004-.431-.5343-.6246-.6557-.431-.4361-.3399h-.8075l-1.4937-.0729-2.2646-.0728-2.2646-.0972-.2785-.0485-.1821-.1457v-.1579l.7286-.0486 1.8821-.0971 2.3974-.1214 2.3852-.1457 2.4218-.0668.8487-.006.3096.091.2914.2003.176.3522v.7285l-.8122.8804-1.3035 1.4564-.5707.674-.8318 1.4389-.2246.7042-.0425.4493-.0607.2307-.0971.2246-.2004.1821-.3764-.0243-.3036-.1457-.2428-.3886-.4424-1.0709-.4914-1.2487-.4918-1.4086-.0122-.3764.1275-.2004.2004-.1706.4614-.6065.5829-1.0362 1.6607-2.4236 1.0361-1.5231.2004-.1527.1457-.2246v-.3521l-.5397-.0486-1.0646-.0971-1.8724-.0729-2.3121-.1214-1.268-.0486-.9939-.0971-1.2086-.0971-1.0776-.0972-.2785.0243-.2246.0971-.17.2004v.3035l.6335.8804.3886.6557 1.2765 2.1569 1.499 2.4751 1.366 2.3739.606 1.0959.1707.4918.091.4372v.5707l-.2428.4005-.5396.1457-.4493.0243-.7225-.0486-1.6541-.1457-1.8398-.1579H8.1283l-2.3853-.243-.3764.0243-.2428.1457v.1705l.4128.0971 1.3296.0971 3.2133.2733 3.1179.2914.7589.091.3885.1457.1821.255v.5091l-.3885.7225-.5392.5829-1.5135 1.7924-.765 1.0362-.5586.8512-.3097.5829-.091.4614.0243.2732.176.2732.3097.1336.569.0243 1.0586.0971 1.849.1336 1.7546.1336 2.7273.2003.1822.0425.1457.1214.091.2004-.0243.4007-.3399.5707-.5829.8136-1.2828 1.6753-2.1239.6429-.8804.4189-.3521.3886-.0733.4189.006.4189.176.2732.3399.091.4493-.091.3643-.2428.3157-.5829v-.7285l-.7931-1.0709-.5698-.9564-.1707-.2785-.3521-.4493-.3218-.419-.4068-.5166-.2004-.2732-.0728-.2732.0243-.2246.1457-.2246.2184-.1457.4129-.0729.7764-.0364 1.2466-.0972 2.068.049 3.1253.047-.3886-.5707-.9643-1.4086-1.1079-1.6361-.5828-.765-.1707-.4128-.1214-.4372-.0122-.3764.2428-.3886.3886-.3035.4128-.0729 1.0658-.0728 1.7876-.0364 1.3497-.1336.5699-.0733.4189-.1457.2732-.2428.1214-.5091-.0728-.5707-.4361-.8062-1.2116-2.0055-2.3497-3.7252-1.5649-2.3957-.8775-.6428-.2428-.3764-.0607-.4007.0364-.3643.1821-.3764.7642-.5829.8136-.5829.5091-.2428h.6982l1.0186.0243 1.42.1214 2.2091.1622.4918.0486.4371.1457.2246.255v.3643l-.3582.5829-.5396.6193-1.7807 2.3496-1.1755 1.7683-.1457.2732-.0728.2246v.2793l.2185.2004.4736.0971 1.6537.0971 3.0464.1583 2.2646.2003.7286.091.4424.1457.2003.2428v.4007l-.431.5829-.7225.7042-1.6515 1.8053-.7225.9271-.2428.4007-.1214.3521v.3643l.1821.2428.4128.1336 1.4317.0971 2.4805.2732 2.1573.176 1.5301.1032.8917.0668.4493.1336.2428.2307v.4007l-.4007.5707-.9643.5829-.9816.1943-1.9197.0971-3.3371.091-2.8919.0243-.3643.0486-.2004.1457-.091.255v.3643l.4554.5829.8135.6882 1.7439 1.62 1.5303 1.4385.4128.4493.1214.3521-.0243.2732-.176.2428-.3885.1457-.7117.0607-1.836 0-2.2825-.0486-1.8994-.0729-1.2817-.0971-.4007.0243-.2428.1336-.1457.255v.3157l.4007.5829.3885.6557 1.0589 1.7993 1.0182 1.6822.4736.9271.091.4007-.0121.3643-.176.2732-.3886.1457-.6131.0364-1.4927-.0364-2.5309-.0486-3.4212-.0971-2.5693-.1336-.7285-.091-.4129-.1672-.2003-.2672v-.3521l.5829-.8136 1.0701-1.62.6428-.9989.4068-.8492.1706-.5829v-.5707l-.3096-.3643-.5829-.1457-1.3782-.0729-1.6713-.1336-1.9727-.1457-1.1429-.0486-.9939-.1214-.4614-.1457-.2428-.2732v-.3643l.2428-.4007.7225-.6882 1.4459-1.5543.857-1.0362.3703-.6124.091-.3885-.0243-.2732-.17-.2429z"
+        />
+      </symbol>
+      <symbol id="logo-openai" viewBox="0 0 24 24">
+        <path
+          fill="currentColor"
+          d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646M2.34 7.896a4.5 4.5 0 0 1 2.366-1.973V11.6a.77.77 0 0 0 .388.677l5.815 3.354l-2.02 1.168a.08.08 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.08.08 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667m2.01-3.023l-.141-.085l-4.774-2.782a.78.78 0 0 0-.785 0L9.409 9.23V6.897a.07.07 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.8.8 0 0 0-.393.681zm1.097-2.365l2.602-1.5l2.607 1.5v2.999l-2.597 1.5l-2.607-1.5z"
+        />
+      </symbol>
+      <symbol id="logo-mock" viewBox="0 0 24 24">
+        <path
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M10 13H8m8 0h-2M10 17H8m8 0h-2"
+        />
+      </symbol>
+    </svg>
     <nav class="nav">
       <div class="nav-inner wrap-inner">
         <div class="brand"><i></i> crewel</div>
@@ -555,11 +619,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <section class="hero">
         <div class="hero-grid">
           <div>
-            <h1>One prompt.<br />Your agents,<br /><em>as one crew.</em></h1>
+            <h1>
+              One board.<br />Any mix.<br /><em>Tickets you can trust.</em>
+            </h1>
             <p class="sub">
-              crewel turns OpenCode, Claude Code and Codex into an orchestrated
-              team — a lead that decomposes, delegates and reviews, teammates in
-              isolated worktrees, all stitched to one board.
+              Every multi-agent tool makes you pick a vendor. Crewel is the
+              board where OpenCode, Claude Code and Codex work together. One
+              lead, each teammate in its own worktree, live on one board.
             </p>
             <div class="install" id="install">
               <code id="npmCmd">npm install -g crewel</code>
@@ -592,14 +658,12 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               <div class="mock" id="mockTerm" aria-hidden="true">
                 <span>$ crewel init</span>
                 <span
-                  ><b>✓</b>&nbsp; team “demo” — lead&nbsp;<b>mock</b>, 5
+                  ><b>✓</b>&nbsp; team “demo”, lead&nbsp;<b>mock</b>, 5
                   teammates</span
                 >
                 <span>$ crewel</span>
                 <span><b>lead&gt;</b> Add login flow per docs/spec.md</span>
-                <span class="ok"
-                  >✓ decomposed into 3 tickets — delegating…</span
-                >
+                <span class="ok">✓ decomposed into 3 tickets, delegating…</span>
                 <span class="ok">✓ mock-1 merged T-102 · lead reviewing…</span>
               </div>
               <button
@@ -620,10 +684,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <!-- HOW -->
       <section class="section" id="how">
         <div class="rule"></div>
-        <h2>Three commands.<br /><em>You never touch the protocol.</em></h2>
+        <h2>You prompt the lead.<br /><em>It breaks it into tickets.</em></h2>
         <p class="lede">
-          No assign-by-hand, no ticking teammates. The lead owns delegation,
-          review and push.
+          Scope, acceptance, deps. You can check each one. Each teammate takes
+          one ticket in its own worktree. Status pushes live. You watch one
+          board: open → assigned → in-progress → in-review → done.
         </p>
         <div class="rail">
           <div class="stepg">
@@ -641,7 +706,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             <div>
               <h3><code>crewel</code></h3>
               <p>
-                Launches every agent at once — real PTY panes, lead focused at
+                Launches every agent at once. Real PTY panes, lead focused at
                 58% left, teammates tiled right. Native on Windows and macOS.
               </p>
             </div>
@@ -665,36 +730,65 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         <div class="rule"></div>
         <h2>The roster is <em>yours.</em></h2>
         <p class="lede">
-          Genuinely mixed teams under one protocol. Adding an agent type is one
-          adapter file.
+          OpenCode first, then Claude Code, then Codex. The third adapter is the
+          proof. The pattern holds. Adding another agent is one file.
         </p>
         <div class="rows">
           <div class="rowl hot">
-            <span class="dot"></span>
+            <div class="logo" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><use href="#logo-opencode" /></svg>
+            </div>
             <h3>OpenCode</h3>
-            <p>
-              Highest reliability bar — Jason’s daily driver, first adapter
-              built.
-            </p>
+            <p>First adapter. Built first, tested hardest. SDK json_schema.</p>
             <span class="tag">Adapter 01</span>
           </div>
           <div class="rowl">
-            <span class="dot"></span>
+            <div class="logo" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><use href="#logo-claude" /></svg>
+            </div>
             <h3>Claude Code</h3>
-            <p>Headless JSON output, typed retry telemetry.</p>
+            <p>Headless with --json-schema. api_retry maps to pause.</p>
             <span class="tag">Adapter 02</span>
           </div>
           <div class="rowl">
-            <span class="dot"></span>
+            <div class="logo" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><use href="#logo-openai" /></svg>
+            </div>
             <h3>Codex</h3>
-            <p>Sandboxed exec with schema-enforced reports.</p>
+            <p>--output-schema, AGENTS.md injection. Proves the pattern.</p>
             <span class="tag">Adapter 03</span>
           </div>
           <div class="rowl">
-            <span class="dot"></span>
+            <div class="logo" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><use href="#logo-mock" /></svg>
+            </div>
             <h3>Mock</h3>
-            <p>Deterministic dry-runs for CI. No LLM required.</p>
+            <p>Runs the full loop with no LLM. For CI.</p>
             <span class="tag">Adapter 00</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- OPS — no daemon / gated merge -->
+      <section class="section" id="ops">
+        <div class="rule"></div>
+        <h2>No daemon.<br /><em>No silent failure.</em></h2>
+        <p class="lede">
+          Heartbeats watch each turn. A stall gets flagged. A teammate hitting a
+          rate limit pauses, it doesn't sink the team.
+        </p>
+        <div class="rail">
+          <div class="stepg">
+            <div class="n">→</div>
+            <div>
+              <h3>Work happens on branches</h3>
+              <p>
+                <code>crewel/{team}/{ticket}</code> cut from
+                <code>crewel/{team}/integration</code>. The lead merges only
+                after review. <code>main</code> moves when you merge the
+                close-out PR. Not before.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -703,10 +797,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <section>
         <div class="cta">
           <div>
-            <h2>Boarding begins<br />with one command.</h2>
+            <h2>One board.<br />Mixed agents.<br />Tickets you can trust.</h2>
             <p class="cta-note">
-              Human-readable state under .crewel/. Main stays sacred. The lead
-              does the rest.
+              Your repo. Your crew. All state under <code>.crewel/</code>, you
+              can <code>cat</code> it.
             </p>
             <div class="install" style="margin-top: 26px">
               <code id="npmCmd2">npm install -g crewel</code>
