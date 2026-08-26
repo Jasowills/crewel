@@ -11,24 +11,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=General+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <style>
+      @font-face {
+        font-family: "General Sans";
+        src: local("General Sans"), local("GeneralSans-Regular");
+        font-display: swap;
+      }
       :root {
-        --bg: #0b0e14;
-        --bg-2: #11141d;
-        --bg-3: #1a1e2e;
-        --line: rgba(201, 168, 106, 0.14);
-        --line-strong: rgba(201, 168, 106, 0.28);
+        --paper: #f8f6f1;
+        --ink: #0f0e0c;
+        --ink-2: #1a1816;
+        --line: rgba(15, 14, 12, 0.08);
+        --line-strong: rgba(15, 14, 12, 0.14);
+        --brass: #8c6a3c;
+        --brass-2: #6b4f2a;
         --cream: #f5f1e8;
-        --cream-dim: rgba(245, 241, 232, 0.66);
-        --cream-faint: rgba(245, 241, 232, 0.38);
-        --gold: #c9a86a;
-        --gold-2: #e8c99a;
-        --gold-glow: rgba(201, 168, 106, 0.22);
-        --radius: 18px;
-        --radius-lg: 24px;
+        --stone: rgba(15, 14, 12, 0.56);
+        --stone-faint: rgba(15, 14, 12, 0.32);
+        --radius: 16px;
       }
       * {
         box-sizing: border-box;
@@ -38,21 +41,18 @@
       }
       body {
         margin: 0;
-        background: var(--bg);
-        color: var(--cream);
-        font-family:
-          "Instrument Sans",
-          system-ui,
-          -apple-system,
-          sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "General Sans", "Instrument Sans", system-ui, sans-serif;
         -webkit-font-smoothing: antialiased;
         line-height: 1.6;
       }
       a {
         color: inherit;
+        text-decoration: none;
       }
       .wrap {
-        max-width: 1180px;
+        max-width: 1160px;
         margin: 0 auto;
         padding: 0 24px;
       }
@@ -61,13 +61,12 @@
           padding: 0 32px;
         }
       }
-      /* Header */
       .header {
         position: sticky;
         top: 0;
         z-index: 20;
-        backdrop-filter: blur(16px);
-        background: rgba(11, 14, 20, 0.72);
+        background: rgba(248, 246, 241, 0.92);
+        backdrop-filter: blur(12px);
         border-bottom: 1px solid var(--line);
       }
       .header-inner {
@@ -79,37 +78,32 @@
       .brand {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         font-weight: 600;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        font-size: 13px;
+        font-size: 12px;
       }
       .brand-mark {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #1a1e2e 0%, #2a2e45 100%);
-        border: 1px solid var(--line-strong);
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: var(--ink);
+        color: var(--paper);
         display: grid;
         place-items: center;
         font-family: "Cormorant Garamond", serif;
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--gold);
-        box-shadow:
-          0 0 0 1px rgba(201, 168, 106, 0.08),
-          0 8px 24px rgba(0, 0, 0, 0.4);
+        font-size: 16px;
+        font-weight: 600;
       }
       .nav {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 18px;
         font-size: 14px;
       }
       .nav a {
-        opacity: 0.7;
-        text-decoration: none;
+        opacity: 0.62;
       }
       .nav a:hover {
         opacity: 1;
@@ -120,327 +114,279 @@
         gap: 8px;
         padding: 10px 18px;
         border-radius: 999px;
-        background: var(--gold);
-        color: #0b0e14;
+        background: var(--ink);
+        color: var(--paper);
         font-weight: 600;
         font-size: 14px;
-        text-decoration: none;
-        box-shadow: 0 0 20px var(--gold-glow);
+        border: 1px solid var(--ink);
         transition:
-          transform 0.15s,
-          box-shadow 0.15s;
+          opacity 0.15s,
+          transform 0.15s;
       }
       .btn:hover {
+        opacity: 0.92;
         transform: translateY(-1px);
-        box-shadow: 0 0 28px var(--gold-glow);
       }
       .btn-ghost {
         background: transparent;
-        color: var(--cream);
+        color: var(--ink);
         border: 1px solid var(--line-strong);
-        box-shadow: none;
       }
       .btn-ghost:hover {
-        background: rgba(245, 241, 232, 0.06);
+        background: var(--ink);
+        color: var(--paper);
       }
-      /* Hero */
       .hero {
-        padding: 56px 0 32px;
-        background:
-          radial-gradient(
-            900px 600px at 20% -10%,
-            rgba(201, 168, 106, 0.14),
-            transparent 60%
-          ),
-          radial-gradient(
-            700px 500px at 85% 10%,
-            rgba(90, 108, 180, 0.1),
-            transparent 60%
-          ),
-          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        padding: 48px 0 40px;
         border-bottom: 1px solid var(--line);
       }
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 12px;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--gold-2);
-        border: 1px solid var(--line-strong);
-        background: rgba(201, 168, 106, 0.08);
-        padding: 6px 10px;
-        border-radius: 999px;
+      .hero-grid {
+        display: grid;
+        gap: 32px;
+      }
+      @media (min-width: 900px) {
+        .hero-grid {
+          grid-template-columns: 1.05fr 0.95fr;
+          align-items: center;
+        }
       }
       .hero h1 {
         font-family: "Cormorant Garamond", serif;
-        font-size: clamp(42px, 6vw, 72px);
-        line-height: 0.95;
+        font-size: clamp(44px, 5.6vw, 68px);
+        line-height: 0.92;
         font-weight: 600;
-        letter-spacing: -0.02em;
-        margin: 18px 0 14px;
+        letter-spacing: -0.03em;
+        margin: 0 0 16px;
       }
-      .hero h1 em {
+      .hero h1 i {
         font-style: italic;
         font-weight: 500;
-        color: var(--gold);
+        color: var(--brass);
       }
       .hero .sub {
-        max-width: 640px;
-        color: var(--cream-dim);
-        font-size: 18px;
+        max-width: 560px;
+        color: var(--stone);
+        font-size: 17px;
         line-height: 1.6;
-        margin: 0 0 28px;
+        margin: 0 0 24px;
       }
       .install {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 10px;
         align-items: center;
-        background: var(--bg-3);
+        background: white;
         border: 1px solid var(--line-strong);
-        border-radius: var(--radius);
-        padding: 14px;
-        max-width: 560px;
-        box-shadow:
-          0 16px 40px rgba(0, 0, 0, 0.35),
-          inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        border-radius: 999px;
+        padding: 8px 8px 8px 16px;
+        max-width: 520px;
+        box-shadow: 0 8px 24px rgba(15, 14, 12, 0.06);
       }
       .install code {
         flex: 1;
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 14px;
-        color: var(--cream);
-        background: transparent;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--ink);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       .copy {
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 12px;
+        font-family: "General Sans", sans-serif;
+        font-size: 11px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         padding: 8px 12px;
         border-radius: 999px;
         border: 1px solid var(--line-strong);
-        background: rgba(245, 241, 232, 0.06);
-        color: var(--cream);
+        background: var(--ink);
+        color: white;
         cursor: pointer;
+        font-weight: 600;
       }
       .copy:hover {
-        background: rgba(245, 241, 232, 0.1);
+        opacity: 0.9;
       }
       .hero-meta {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 8px;
         margin-top: 14px;
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 11px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: var(--cream-faint);
+        color: var(--stone-faint);
       }
       .hero-meta span {
         border: 1px solid var(--line);
         padding: 4px 8px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.02);
+        background: white;
       }
-      /* Video */
-      .video-wrap {
-        margin-top: 36px;
-        background: var(--bg-3);
+      .hero-visual {
+        position: relative;
+        background: white;
         border: 1px solid var(--line-strong);
-        border-radius: var(--radius-lg);
+        border-radius: 20px;
         overflow: hidden;
         box-shadow:
-          0 24px 60px rgba(0, 0, 0, 0.45),
-          0 0 0 1px rgba(201, 168, 106, 0.06);
+          0 24px 48px rgba(15, 14, 12, 0.08),
+          0 8px 16px rgba(15, 14, 12, 0.04);
       }
-      .video-head {
+      .hero-visual-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 12px 16px;
         border-bottom: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.02);
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 11px;
+        background: #fcfbf8;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: var(--cream-faint);
+        color: var(--stone-faint);
       }
       .dots {
         display: flex;
         gap: 6px;
       }
       .dots i {
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
         display: block;
-        border: 1px solid var(--line-strong);
       }
       .dots i:nth-child(1) {
-        background: #2a2e45;
+        background: #e8e6e1;
+        border: 1px solid var(--line);
       }
       .dots i:nth-child(2) {
-        background: #3a3e5e;
+        background: #e8e6e1;
+        border: 1px solid var(--line);
       }
       .dots i:nth-child(3) {
-        background: var(--gold);
-        border-color: var(--gold);
+        background: var(--brass);
       }
       .video-stage {
-        aspect-ratio: 16/9;
-        background:
-          radial-gradient(
-            600px 400px at 30% 20%,
-            rgba(201, 168, 106, 0.12),
-            transparent 60%
-          ),
-          linear-gradient(180deg, #0e1320 0%, #0b0e14 100%);
-        display: grid;
-        place-items: center;
+        aspect-ratio: 16/10;
+        background: #0f0e0c;
         position: relative;
         overflow: hidden;
-      }
-      .video-stage::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: repeating-linear-gradient(
-          90deg,
-          transparent 0 79px,
-          rgba(201, 168, 106, 0.04) 79px 80px
-        );
-        mask: linear-gradient(
-          180deg,
-          transparent,
-          black 20%,
-          black 80%,
-          transparent
-        );
+        display: grid;
+        place-items: center;
+        padding: 18px;
       }
       .terminal-mock {
-        width: min(820px, 92%);
-        background: #0a0d16;
-        border: 1px solid var(--line-strong);
-        border-radius: 14px;
+        width: 100%;
+        max-width: 640px;
+        background: #14120f;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-        text-align: left;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       }
       .term-head {
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 14px;
-        background: #111624;
-        border-bottom: 1px solid var(--line);
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 11px;
-        color: var(--cream-faint);
+        padding: 8px 12px;
+        background: #1a1816;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.4);
       }
       .term-body {
-        padding: 18px 16px 16px;
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 12px;
-        line-height: 1.7;
-        color: var(--cream);
+        padding: 14px 14px 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        line-height: 1.6;
+        color: #f5f1e8;
+        text-align: left;
       }
       .term-body .dim {
-        color: var(--cream-faint);
+        color: rgba(245, 241, 232, 0.38);
       }
       .term-body .gold {
-        color: var(--gold);
+        color: #c9a86a;
       }
       .term-body .line {
         opacity: 0;
-        animation: appear 0.4s forwards;
+        transform: translateY(4px);
+        animation: appear 0.5s forwards;
       }
       .term-body .line:nth-child(1) {
         animation-delay: 0.2s;
       }
       .term-body .line:nth-child(2) {
-        animation-delay: 0.5s;
+        animation-delay: 0.6s;
       }
       .term-body .line:nth-child(3) {
-        animation-delay: 0.8s;
+        animation-delay: 1s;
       }
       .term-body .line:nth-child(4) {
-        animation-delay: 1.1s;
-      }
-      .term-body .line:nth-child(5) {
         animation-delay: 1.4s;
       }
+      .term-body .line:nth-child(5) {
+        animation-delay: 1.8s;
+      }
       @keyframes appear {
-        from {
-          opacity: 0;
-          transform: translateY(4px);
-        }
         to {
           opacity: 1;
-          transform: translateY(0);
+          transform: none;
         }
       }
       .play {
         position: absolute;
-        width: 64px;
-        height: 64px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
-        background: var(--gold);
-        color: #0b0e14;
+        background: white;
+        color: var(--ink);
         display: grid;
         place-items: center;
-        font-size: 20px;
-        box-shadow: 0 0 30px var(--gold-glow);
+        font-size: 18px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         cursor: pointer;
         transition: transform 0.15s;
+        z-index: 2;
       }
       .play:hover {
         transform: scale(1.06);
       }
       .video-caption {
-        padding: 12px 16px;
-        font-size: 13px;
-        color: var(--cream-dim);
+        padding: 10px 16px;
+        font-size: 12px;
+        color: var(--stone);
         border-top: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.015);
+        background: #fcfbf8;
         display: flex;
         justify-content: space-between;
         gap: 12px;
         flex-wrap: wrap;
       }
-      .video-caption strong {
-        color: var(--cream);
-        font-weight: 600;
-      }
-      /* Sections */
       .section {
         padding: 64px 0;
         border-bottom: 1px solid var(--line);
       }
       .section h2 {
         font-family: "Cormorant Garamond", serif;
-        font-size: 36px;
-        line-height: 0.95;
+        font-size: 38px;
+        line-height: 0.9;
         letter-spacing: -0.02em;
-        margin: 0 0 12px;
+        margin: 0 0 10px;
       }
-      .section h2 em {
+      .section h2 i {
         font-style: italic;
-        color: var(--gold);
+        color: var(--brass);
         font-weight: 500;
       }
       .section .lead {
-        color: var(--cream-dim);
-        max-width: 640px;
+        color: var(--stone);
+        max-width: 600px;
         margin: 0 0 32px;
+        font-size: 17px;
       }
       .grid {
         display: grid;
@@ -458,15 +404,15 @@
       }
       @media (min-width: 900px) {
         .how {
-          grid-template-columns: 1.1fr 1.8fr;
+          grid-template-columns: 1fr 1.6fr;
           align-items: start;
         }
       }
       .card {
-        background: var(--bg-3);
+        background: white;
         border: 1px solid var(--line);
-        border-radius: var(--radius);
-        padding: 18px;
+        border-radius: 16px;
+        padding: 20px;
       }
       .card h3 {
         margin: 0 0 6px;
@@ -475,7 +421,7 @@
       }
       .card p {
         margin: 0;
-        color: var(--cream-dim);
+        color: var(--stone);
         font-size: 14px;
         line-height: 1.6;
       }
@@ -485,15 +431,15 @@
         border-radius: 10px;
         display: grid;
         place-items: center;
-        background: rgba(201, 168, 106, 0.1);
-        border: 1px solid var(--line-strong);
-        color: var(--gold);
+        background: var(--paper);
+        border: 1px solid var(--line);
+        color: var(--brass);
         margin-bottom: 12px;
-        font-size: 16px;
+        font-size: 14px;
       }
       .agent {
         text-align: center;
-        padding: 20px 14px;
+        padding: 22px 16px;
       }
       .agent .logo {
         width: 48px;
@@ -502,11 +448,12 @@
         border-radius: 12px;
         display: grid;
         place-items: center;
-        background: var(--bg-2);
-        border: 1px solid var(--line);
-        font-weight: 700;
+        background: var(--ink);
+        color: white;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
         letter-spacing: 0.06em;
-        color: var(--cream);
+        font-weight: 600;
       }
       .agent h3 {
         font-size: 14px;
@@ -514,23 +461,28 @@
       }
       .agent p {
         font-size: 12px;
-        color: var(--cream-faint);
+        color: var(--stone-faint);
         line-height: 1.5;
       }
       .agent.featured {
-        background: linear-gradient(
-          180deg,
-          rgba(201, 168, 106, 0.08),
-          var(--bg-3)
-        );
-        border-color: var(--line-strong);
-        box-shadow: 0 0 24px var(--gold-glow);
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
       }
-      /* CTA */
+      .agent.featured .logo {
+        background: white;
+        color: var(--ink);
+      }
+      .agent.featured p {
+        color: rgba(245, 241, 232, 0.62);
+      }
+      .agent.featured h3 {
+        color: var(--paper);
+      }
       .cta {
-        background: linear-gradient(180deg, var(--bg-3) 0%, #0e1320 100%);
-        border: 1px solid var(--line-strong);
-        border-radius: var(--radius-lg);
+        background: var(--ink);
+        color: var(--paper);
+        border-radius: 20px;
         padding: 28px;
         display: flex;
         flex-wrap: wrap;
@@ -543,15 +495,23 @@
         font-size: 28px;
         line-height: 1;
         margin: 0;
+        color: var(--paper);
       }
       .cta p {
         margin: 6px 0 0;
-        color: var(--cream-dim);
+        color: rgba(245, 241, 232, 0.6);
         max-width: 520px;
+      }
+      .cta .btn {
+        background: var(--paper);
+        color: var(--ink);
+      }
+      .cta .btn:hover {
+        background: white;
       }
       .footer {
         padding: 28px 0;
-        color: var(--cream-faint);
+        color: var(--stone-faint);
         font-size: 13px;
         display: flex;
         flex-wrap: wrap;
@@ -581,122 +541,132 @@
 
     <main>
       <section class="hero">
-        <div class="wrap">
-          <span class="eyebrow"
-            >Cross-agent team orchestrator — OpenCode · Claude Code ·
-            Codex</span
-          >
-          <h1>
-            A <em>mixed crew</em><br />of coding agents,<br />stitched together.
-          </h1>
-          <p class="sub">
-            Crewel turns your coding agents into a real team. One lead
-            orchestrates. Teammates work in isolated git worktrees,
-            communicating through a shared, human-readable board — live, not
-            polled. You prompt the lead; the crew delivers.
-          </p>
+        <div class="wrap hero-grid">
+          <div>
+            <h1>
+              A <i>mixed crew</i><br />of coding agents,<br />stitched together.
+            </h1>
+            <p class="sub">
+              Crewel turns your agents into a real team. One lead orchestrates.
+              Teammates work in isolated git worktrees on a shared board — live,
+              not polled. You prompt the lead; the crew delivers.
+            </p>
 
-          <div class="install" id="install">
-            <code id="npmCmd">npm install -g crewel</code>
-            <button class="copy" onclick="copyCmd()">Copy</button>
-            <a
-              class="btn btn-ghost"
-              href="https://github.com/Jasowills/crewel#quickstart"
-              target="_blank"
-              rel="noopener"
-              >Quickstart →</a
-            >
-          </div>
-          <div class="hero-meta">
-            <span>Node ≥20</span><span>MIT</span
-            ><span>Works on Windows &amp; macOS</span
-            ><span>Lead-only review &amp; push</span>
-          </div>
-
-          <div class="video-wrap" id="video">
-            <div class="video-head">
-              <span>crewel — 6-pane team • lead focused</span
-              ><span class="dots"><i></i><i></i><i></i></span>
-            </div>
-            <div class="video-stage">
-              <div
-                class="terminal-mock"
-                aria-label="Hyperframes preview — 6-pane layout"
+            <div class="install" id="install">
+              <code id="npmCmd">npm install -g crewel</code>
+              <button class="copy" onclick="copyCmd()">Copy</button>
+              <a
+                class="btn"
+                href="https://github.com/Jasowills/crewel#quickstart"
+                target="_blank"
+                rel="noopener"
+                style="padding: 8px 14px; font-size: 13px"
+                >Quickstart</a
               >
+            </div>
+            <div class="hero-meta">
+              <span>Node ≥20</span><span>MIT</span
+              ><span>Windows &amp; macOS</span><span>Lead-only review</span>
+            </div>
+          </div>
+
+          <div class="hero-visual" id="video">
+            <div class="video-stage" id="videoStage">
+              <div class="terminal-mock" aria-label="crewel 6-pane layout">
                 <div class="term-head">
-                  <span>♦ LEAD — mock (focused)</span
-                  ><span style="margin-left: auto; opacity: 0.6"
-                    >58% left | 2+2+1 grid right</span
+                  <span
+                    >crewel — demo • lead mock (focused) — 58% left | 2+2+1 grid
+                    right</span
                   >
                 </div>
                 <div class="term-body">
                   <div class="line">
                     <span class="dim">$</span> crewel init
-                    <span class="dim">— team "demo" • lead mock • mock:2</span>
+                    <span class="dim">— demo • mock:2</span>
                   </div>
                   <div class="line">
-                    <span class="gold">✓</span> team "demo" ready — teammates:
-                    mock-1, mock-2
+                    <span class="gold">✓</span> team "demo" ready
                   </div>
-                  <div class="line">
-                    <span class="dim">$</span> crewel
-                    <span class="dim">— launching 6 panes</span>
-                  </div>
+                  <div class="line"><span class="dim">$</span> crewel</div>
                   <div class="line">
                     <span class="gold">lead&gt;</span> Add a login flow per
                     docs/spec.md
                   </div>
                   <div class="line">
-                    <span class="gold">✓</span> decomposed into 3 tickets:
-                    auth-schema, login-route, login-tests — mock-1, mock-2
-                    streaming…
+                    <span class="gold">✓</span> decomposed into 3 tickets —
+                    mock-1, mock-2 streaming…
                   </div>
                 </div>
               </div>
               <div
                 class="play"
-                onclick="playHyperframes()"
-                title="Play Hyperframes video"
+                id="playBtn"
+                onclick="playVideo()"
+                title="Play video"
                 aria-label="Play video"
               >
                 ▶
               </div>
+              <video
+                id="hyperframesVideo"
+                style="
+                  display: none;
+                  position: absolute;
+                  inset: 0;
+                  width: 100%;
+                  height: 100%;
+                  object-fit: cover;
+                  background: #0f0e0c;
+                "
+                controls
+                playsinline
+                poster=""
+              ></video>
             </div>
-            <div class="video-caption">
-              <span
-                ><strong>Hyperframes video</strong> — 15s launch cut: hook →
-                reveal → 3 highlights → outro. Drop
-                <code>brag-output/brag.mp4</code> here; this frame becomes the
-                idle poster.</span
-              >
-              <span style="opacity: 0.6">15–25s · 16:9 · with SFX</span>
+            <div
+              style="
+                padding: 10px 16px;
+                font-size: 11px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--stone-faint);
+                font-family: &quot;JetBrains Mono&quot;, monospace;
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+                flex-wrap: wrap;
+                border-top: 1px solid var(--line);
+                background: #fcfbf8;
+              "
+            >
+              <span>Hyperframes — 15s launch cut</span
+              ><span>16:9 • 15–25s</span>
             </div>
-            <!-- Replace the stage above with: <video id="hyperframes" poster="brag-output/brag.jpg" controls playsinline><source src="brag-output/brag.mp4" type="video/mp4"></video> -->
           </div>
         </div>
       </section>
 
       <section class="section" id="how">
         <div class="wrap">
-          <h2>How it <em>works</em></h2>
+          <h2>How it <i>works</i></h2>
           <p class="lead">
-            One terminal where you prompt the lead. The crew does the rest —
-            isolated, live, review-gated.
+            One prompt to the lead. The crew does the rest — isolated, live,
+            review-gated.
           </p>
           <div class="grid how">
             <div class="card" style="position: sticky; top: 88px">
-              <h3>Single-entry UX</h3>
+              <h3>Single-entry</h3>
               <p>
                 <code>crewel init</code> once. Then <code>crewel</code> with no
-                args prompts to init if missing, or launches the 6-pane UI with
-                the lead focused. You type once; the lead fans out.
+                args launches the 6-pane UI with the lead focused. You type
+                once; the lead fans out.
               </p>
               <p
                 style="
                   margin-top: 12px;
-                  color: var(--cream);
-                  font-family: &quot;IBM Plex Mono&quot;, monospace;
-                  font-size: 12px;
+                  color: var(--ink);
+                  font-family: &quot;JetBrains Mono&quot;, monospace;
+                  font-size: 11px;
                 "
               >
                 crewel init → crewel → prompt lead
@@ -707,9 +677,8 @@
                 <div class="icon">◈</div>
                 <h3>1 — Init</h3>
                 <p>
-                  Pick team size, which agents and how many, and the
-                  orchestrator. Writes <code>crewel.json</code> +
-                  <code>.crewel/teams/{name}/config.json</code>.
+                  Pick team size, agents and how many, and the orchestrator.
+                  Writes <code>crewel.json</code>.
                 </p>
               </div>
               <div class="card">
@@ -717,16 +686,14 @@
                 <h3>2 — Launch</h3>
                 <p>
                   <code>crewel</code> spawns 6 real PTYs (ConPTY on Windows,
-                  forkpty on macOS) — lead 58% left, teammates 2+2+1 grid right.
-                  Each pane is interactive; you can chip in anywhere.
+                  forkpty on macOS) — lead 58% left, 2+2+1 grid right.
                 </p>
               </div>
               <div class="card">
                 <div class="icon">✦</div>
                 <h3>3 — Prompt the lead</h3>
                 <p>
-                  Lead decomposes your request into tickets with acceptance
-                  criteria, assigns round-robin, watches worktrees, handles
+                  Lead decomposes into tickets, assigns round-robin, handles
                   <code>needs-clarification</code>, reviews, and is the only one
                   who merges to <code>main</code>.
                 </p>
@@ -738,57 +705,38 @@
 
       <section class="section" id="agents">
         <div class="wrap">
-          <h2>Works with <em>your</em> agents</h2>
-          <p class="lead">
-            Agent-agnostic — not locked to one vendor. Mix genuinely different
-            types in one team.
-          </p>
+          <h2>Works with <i>your</i> agents</h2>
+          <p class="lead">Agent-agnostic — not locked to one vendor.</p>
           <div class="grid grid-4">
             <div class="card agent featured">
               <div class="logo">OC</div>
               <h3>OpenCode</h3>
-              <p>
-                Primary daily driver. Highest reliability bar. First adapter
-                built.
-              </p>
+              <p>Primary daily driver. First adapter.</p>
             </div>
             <div class="card agent">
               <div class="logo">CC</div>
               <h3>Claude Code</h3>
-              <p>
-                Headless <code>-p --output-format json</code> +
-                <code>api_retry</code> telemetry.
-              </p>
+              <p>Headless <code>-p --output-format json</code></p>
             </div>
             <div class="card agent">
               <div class="logo">CX</div>
               <h3>Codex</h3>
-              <p>
-                <code>exec --json</code> with output-schema, sandboxed workspace
-                writes.
-              </p>
+              <p><code>exec --json</code> sandboxed</p>
             </div>
             <div class="card agent">
               <div class="logo">MK</div>
               <h3>Mock</h3>
-              <p>Deterministic dry-runs for CI and tests. No LLM required.</p>
+              <p>Deterministic dry-runs for CI.</p>
             </div>
           </div>
-          <p
-            style="margin-top: 16px; color: var(--cream-faint); font-size: 13px"
-          >
-            Add more via the <code>AgentAdapter</code> interface — one file per
-            agent type. Core never talks to an agent directly.
-          </p>
         </div>
       </section>
 
       <section class="section">
         <div class="wrap">
-          <h2>Built for <em>senior</em> teams</h2>
+          <h2>Built for <i>senior</i> teams</h2>
           <p class="lead">
-            Not a todo list — real tickets with status, assignee, dependencies,
-            and acceptance criteria. Senior-bar by contract.
+            Real tickets, not a todo list. Senior-bar by contract.
           </p>
           <div class="grid grid-3">
             <div class="card">
@@ -796,26 +744,23 @@
               <h3>Isolated worktrees</h3>
               <p>
                 Each teammate on <code>crewel/{team}/integration</code> +
-                <code>crewel/{team}/{id}</code> branches. Main untouched until
-                close-out PR.
+                per-teammate branches. Main untouched until close-out.
               </p>
             </div>
             <div class="card">
               <div class="icon">◎</div>
               <h3>Live, not polled</h3>
               <p>
-                <code>fs.watch</code> on <code>messages/</code>,
-                <code>tickets/</code>, <code>jason.log</code> — every teammate
-                and you are pushed the moment something relevant happens.
+                <code>team watch</code> streams board and mail via
+                <code>fs.watch</code>.
               </p>
             </div>
             <div class="card">
               <div class="icon">◐</div>
               <h3>Resilient</h3>
               <p>
-                Interrupt, stall watchdog, rate-limit auto-pause, freeze after 3
-                failures, hybrid reassign only on clean worktrees. Worktrees
-                never auto-deleted.
+                Interrupt, stall watchdog, rate-limit pause, freeze after 3
+                failures. Worktrees never auto-deleted.
               </p>
             </div>
           </div>
@@ -828,9 +773,8 @@
             <div>
               <h3>Ready to stitch your crew?</h3>
               <p>
-                One command to install, one prompt to the lead. The crew does
-                the rest — live, review-gated, and human-readable under
-                <code>.crewel/</code>.
+                One command to install, one prompt to the lead. Human-readable
+                under <code>.crewel/</code>.
               </p>
             </div>
             <div style="display: flex; gap: 12px; flex-wrap: wrap">
@@ -839,9 +783,18 @@
                 href="https://github.com/Jasowills/crewel"
                 target="_blank"
                 rel="noopener"
+                style="background: var(--paper); color: var(--ink)"
                 >View on GitHub →</a
               >
-              <button class="btn btn-ghost" onclick="copyCmd()">
+              <button
+                class="btn"
+                style="
+                  background: transparent;
+                  color: var(--paper);
+                  border: 1px solid rgba(255, 255, 255, 0.18);
+                "
+                onclick="copyCmd()"
+              >
                 Copy npm command
               </button>
             </div>
@@ -851,10 +804,7 @@
     </main>
 
     <footer class="footer wrap">
-      <span
-        >© 2026 Crewel — MIT — Like crewel embroidery, many threads, one
-        fabric.</span
-      >
+      <span>© 2026 Crewel — MIT — Many threads, one fabric.</span>
       <span
         ><a href="https://github.com/Jasowills/crewel/blob/main/docs/PRD.md"
           >PRD</a
@@ -872,30 +822,51 @@
       function copyCmd() {
         const cmd = document.getElementById("npmCmd").textContent;
         navigator.clipboard.writeText(cmd).then(() => {
-          const btns = document.querySelectorAll(".copy");
-          btns.forEach((b) => {
+          document.querySelectorAll(".copy").forEach((b) => {
             const t = b.textContent;
             b.textContent = "Copied!";
             setTimeout(() => (b.textContent = t), 1400);
           });
         });
       }
-      function playHyperframes() {
-        const stage = document.querySelector(".video-stage");
-        // Placeholder until brag-output/brag.mp4 exists — swap to video element when ready
-        // const video = document.createElement('video');
-        // video.src = 'brag-output/brag.mp4';
-        // video.poster = 'brag-output/brag.jpg';
-        // video.controls = true; video.autoplay = true; video.playsInline = true;
-        // stage.replaceChildren(video);
-        stage.style.outline = "1px solid rgba(201,168,106,0.5)";
-        setTimeout(() => (stage.style.outline = ""), 600);
-        // For now, scroll to install
-        document
-          .getElementById("install")
-          .scrollIntoView({ behavior: "smooth", block: "center" });
+      async function playVideo() {
+        const video = document.getElementById("hyperframesVideo");
+        const mock = document.querySelector(".terminal-mock");
+        const btn = document.getElementById("playBtn");
+        // If a real Hyperframes render exists at site/brag-output/brag.mp4, use it
+        const candidates = [
+          "brag-output/brag.mp4",
+          "site/brag-output/brag.mp4",
+          "./brag.mp4",
+        ];
+        for (const src of candidates) {
+          try {
+            const res = await fetch(src, { method: "HEAD" });
+            if (res.ok) {
+              video.src = src;
+              video.style.display = "block";
+              mock.style.display = "none";
+              btn.style.display = "none";
+              video.play();
+              return;
+            }
+          } catch {}
+        }
+        // No video yet — animate the mock as a Hyperframes-style preview
+        btn.textContent = "◆";
+        btn.style.background = "var(--ink)";
+        btn.style.color = "white";
+        document.querySelectorAll(".term-body .line").forEach((el, i) => {
+          el.style.animation = "none";
+          el.offsetHeight;
+          el.style.animation = `appear .4s forwards ${i * 0.12}s`;
+        });
+        setTimeout(() => {
+          btn.textContent = "▶";
+          btn.style.background = "";
+          btn.style.color = "";
+        }, 900);
       }
-      // Respect reduced motion
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         document
           .querySelectorAll(".term-body .line")
