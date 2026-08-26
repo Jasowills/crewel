@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>crewel — a mixed crew of coding agents, stitched together</title>
+    <meta
+      name="description"
+      content="A mixed crew of coding agents, stitched together on one ticket board. Cross-agent team orchestrator for OpenCode, Claude Code and Codex."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0b0e14;
+        --bg-2: #11141d;
+        --bg-3: #1a1e2e;
+        --line: rgba(201, 168, 106, 0.14);
+        --line-strong: rgba(201, 168, 106, 0.28);
+        --cream: #f5f1e8;
+        --cream-dim: rgba(245, 241, 232, 0.66);
+        --cream-faint: rgba(245, 241, 232, 0.38);
+        --gold: #c9a86a;
+        --gold-2: #e8c99a;
+        --gold-glow: rgba(201, 168, 106, 0.22);
+        --radius: 18px;
+        --radius-lg: 24px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--cream);
+        font-family:
+          "Instrument Sans",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.6;
+      }
+      a {
+        color: inherit;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      @media (min-width: 900px) {
+        .wrap {
+          padding: 0 32px;
+        }
+      }
+      /* Header */
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(16px);
+        background: rgba(11, 14, 20, 0.72);
+        border-bottom: 1px solid var(--line);
+      }
+      .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 64px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-size: 13px;
+      }
+      .brand-mark {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #1a1e2e 0%, #2a2e45 100%);
+        border: 1px solid var(--line-strong);
+        display: grid;
+        place-items: center;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--gold);
+        box-shadow:
+          0 0 0 1px rgba(201, 168, 106, 0.08),
+          0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 14px;
+      }
+      .nav a {
+        opacity: 0.7;
+        text-decoration: none;
+      }
+      .nav a:hover {
+        opacity: 1;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: var(--gold);
+        color: #0b0e14;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        box-shadow: 0 0 20px var(--gold-glow);
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 28px var(--gold-glow);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--cream);
+        border: 1px solid var(--line-strong);
+        box-shadow: none;
+      }
+      .btn-ghost:hover {
+        background: rgba(245, 241, 232, 0.06);
+      }
+      /* Hero */
+      .hero {
+        padding: 56px 0 32px;
+        background:
+          radial-gradient(
+            900px 600px at 20% -10%,
+            rgba(201, 168, 106, 0.14),
+            transparent 60%
+          ),
+          radial-gradient(
+            700px 500px at 85% 10%,
+            rgba(90, 108, 180, 0.1),
+            transparent 60%
+          ),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        border-bottom: 1px solid var(--line);
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold-2);
+        border: 1px solid var(--line-strong);
+        background: rgba(201, 168, 106, 0.08);
+        padding: 6px 10px;
+        border-radius: 999px;
+      }
+      .hero h1 {
+        font-family: "Cormorant Garamond", serif;
+        font-size: clamp(42px, 6vw, 72px);
+        line-height: 0.95;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 18px 0 14px;
+      }
+      .hero h1 em {
+        font-style: italic;
+        font-weight: 500;
+        color: var(--gold);
+      }
+      .hero .sub {
+        max-width: 640px;
+        color: var(--cream-dim);
+        font-size: 18px;
+        line-height: 1.6;
+        margin: 0 0 28px;
+      }
+      .install {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        background: var(--bg-3);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius);
+        padding: 14px;
+        max-width: 560px;
+        box-shadow:
+          0 16px 40px rgba(0, 0, 0, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+      .install code {
+        flex: 1;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 14px;
+        color: var(--cream);
+        background: transparent;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .copy {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line-strong);
+        background: rgba(245, 241, 232, 0.06);
+        color: var(--cream);
+        cursor: pointer;
+      }
+      .copy:hover {
+        background: rgba(245, 241, 232, 0.1);
+      }
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cream-faint);
+      }
+      .hero-meta span {
+        border: 1px solid var(--line);
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      /* Video */
+      .video-wrap {
+        margin-top: 36px;
+        background: var(--bg-3);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow:
+          0 24px 60px rgba(0, 0, 0, 0.45),
+          0 0 0 1px rgba(201, 168, 106, 0.06);
+      }
+      .video-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.02);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--cream-faint);
+      }
+      .dots {
+        display: flex;
+        gap: 6px;
+      }
+      .dots i {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: block;
+        border: 1px solid var(--line-strong);
+      }
+      .dots i:nth-child(1) {
+        background: #2a2e45;
+      }
+      .dots i:nth-child(2) {
+        background: #3a3e5e;
+      }
+      .dots i:nth-child(3) {
+        background: var(--gold);
+        border-color: var(--gold);
+      }
+      .video-stage {
+        aspect-ratio: 16/9;
+        background:
+          radial-gradient(
+            600px 400px at 30% 20%,
+            rgba(201, 168, 106, 0.12),
+            transparent 60%
+          ),
+          linear-gradient(180deg, #0e1320 0%, #0b0e14 100%);
+        display: grid;
+        place-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .video-stage::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          90deg,
+          transparent 0 79px,
+          rgba(201, 168, 106, 0.04) 79px 80px
+        );
+        mask: linear-gradient(
+          180deg,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+      }
+      .terminal-mock {
+        width: min(820px, 92%);
+        background: #0a0d16;
+        border: 1px solid var(--line-strong);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        text-align: left;
+      }
+      .term-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #111624;
+        border-bottom: 1px solid var(--line);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--cream-faint);
+      }
+      .term-body {
+        padding: 18px 16px 16px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--cream);
+      }
+      .term-body .dim {
+        color: var(--cream-faint);
+      }
+      .term-body .gold {
+        color: var(--gold);
+      }
+      .term-body .line {
+        opacity: 0;
+        animation: appear 0.4s forwards;
+      }
+      .term-body .line:nth-child(1) {
+        animation-delay: 0.2s;
+      }
+      .term-body .line:nth-child(2) {
+        animation-delay: 0.5s;
+      }
+      .term-body .line:nth-child(3) {
+        animation-delay: 0.8s;
+      }
+      .term-body .line:nth-child(4) {
+        animation-delay: 1.1s;
+      }
+      .term-body .line:nth-child(5) {
+        animation-delay: 1.4s;
+      }
+      @keyframes appear {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .play {
+        position: absolute;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--gold);
+        color: #0b0e14;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        box-shadow: 0 0 30px var(--gold-glow);
+        cursor: pointer;
+        transition: transform 0.15s;
+      }
+      .play:hover {
+        transform: scale(1.06);
+      }
+      .video-caption {
+        padding: 12px 16px;
+        font-size: 13px;
+        color: var(--cream-dim);
+        border-top: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.015);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .video-caption strong {
+        color: var(--cream);
+        font-weight: 600;
+      }
+      /* Sections */
+      .section {
+        padding: 64px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .section h2 {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 36px;
+        line-height: 0.95;
+        letter-spacing: -0.02em;
+        margin: 0 0 12px;
+      }
+      .section h2 em {
+        font-style: italic;
+        color: var(--gold);
+        font-weight: 500;
+      }
+      .section .lead {
+        color: var(--cream-dim);
+        max-width: 640px;
+        margin: 0 0 32px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 700px) {
+        .grid-3 {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      @media (min-width: 700px) {
+        .grid-4 {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+      @media (min-width: 900px) {
+        .how {
+          grid-template-columns: 1.1fr 1.8fr;
+          align-items: start;
+        }
+      }
+      .card {
+        background: var(--bg-3);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 18px;
+      }
+      .card h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+        letter-spacing: -0.01em;
+      }
+      .card p {
+        margin: 0;
+        color: var(--cream-dim);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .card .icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        background: rgba(201, 168, 106, 0.1);
+        border: 1px solid var(--line-strong);
+        color: var(--gold);
+        margin-bottom: 12px;
+        font-size: 16px;
+      }
+      .agent {
+        text-align: center;
+        padding: 20px 14px;
+      }
+      .agent .logo {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 12px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--cream);
+      }
+      .agent h3 {
+        font-size: 14px;
+        margin: 0 0 4px;
+      }
+      .agent p {
+        font-size: 12px;
+        color: var(--cream-faint);
+        line-height: 1.5;
+      }
+      .agent.featured {
+        background: linear-gradient(
+          180deg,
+          rgba(201, 168, 106, 0.08),
+          var(--bg-3)
+        );
+        border-color: var(--line-strong);
+        box-shadow: 0 0 24px var(--gold-glow);
+      }
+      /* CTA */
+      .cta {
+        background: linear-gradient(180deg, var(--bg-3) 0%, #0e1320 100%);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-lg);
+        padding: 28px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .cta h3 {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 28px;
+        line-height: 1;
+        margin: 0;
+      }
+      .cta p {
+        margin: 6px 0 0;
+        color: var(--cream-dim);
+        max-width: 520px;
+      }
+      .footer {
+        padding: 28px 0;
+        color: var(--cream-faint);
+        font-size: 13px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: space-between;
+        border-top: 1px solid var(--line);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="wrap header-inner">
+        <div class="brand"><span class="brand-mark">C</span> crewel</div>
+        <nav class="nav">
+          <a href="#how">How it works</a>
+          <a href="#agents">Agents</a>
+          <a
+            href="https://github.com/Jasowills/crewel"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+          <a class="btn" href="#install">Install</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="wrap">
+          <span class="eyebrow"
+            >Cross-agent team orchestrator — OpenCode · Claude Code ·
+            Codex</span
+          >
+          <h1>
+            A <em>mixed crew</em><br />of coding agents,<br />stitched together.
+          </h1>
+          <p class="sub">
+            Crewel turns your coding agents into a real team. One lead
+            orchestrates. Teammates work in isolated git worktrees,
+            communicating through a shared, human-readable board — live, not
+            polled. You prompt the lead; the crew delivers.
+          </p>
+
+          <div class="install" id="install">
+            <code id="npmCmd">npm install -g crewel</code>
+            <button class="copy" onclick="copyCmd()">Copy</button>
+            <a
+              class="btn btn-ghost"
+              href="https://github.com/Jasowills/crewel#quickstart"
+              target="_blank"
+              rel="noopener"
+              >Quickstart →</a
+            >
+          </div>
+          <div class="hero-meta">
+            <span>Node ≥20</span><span>MIT</span
+            ><span>Works on Windows &amp; macOS</span
+            ><span>Lead-only review &amp; push</span>
+          </div>
+
+          <div class="video-wrap" id="video">
+            <div class="video-head">
+              <span>crewel — 6-pane team • lead focused</span
+              ><span class="dots"><i></i><i></i><i></i></span>
+            </div>
+            <div class="video-stage">
+              <div
+                class="terminal-mock"
+                aria-label="Hyperframes preview — 6-pane layout"
+              >
+                <div class="term-head">
+                  <span>♦ LEAD — mock (focused)</span
+                  ><span style="margin-left: auto; opacity: 0.6"
+                    >58% left | 2+2+1 grid right</span
+                  >
+                </div>
+                <div class="term-body">
+                  <div class="line">
+                    <span class="dim">$</span> crewel init
+                    <span class="dim">— team "demo" • lead mock • mock:2</span>
+                  </div>
+                  <div class="line">
+                    <span class="gold">✓</span> team "demo" ready — teammates:
+                    mock-1, mock-2
+                  </div>
+                  <div class="line">
+                    <span class="dim">$</span> crewel
+                    <span class="dim">— launching 6 panes</span>
+                  </div>
+                  <div class="line">
+                    <span class="gold">lead&gt;</span> Add a login flow per
+                    docs/spec.md
+                  </div>
+                  <div class="line">
+                    <span class="gold">✓</span> decomposed into 3 tickets:
+                    auth-schema, login-route, login-tests — mock-1, mock-2
+                    streaming…
+                  </div>
+                </div>
+              </div>
+              <div
+                class="play"
+                onclick="playHyperframes()"
+                title="Play Hyperframes video"
+                aria-label="Play video"
+              >
+                ▶
+              </div>
+            </div>
+            <div class="video-caption">
+              <span
+                ><strong>Hyperframes video</strong> — 15s launch cut: hook →
+                reveal → 3 highlights → outro. Drop
+                <code>brag-output/brag.mp4</code> here; this frame becomes the
+                idle poster.</span
+              >
+              <span style="opacity: 0.6">15–25s · 16:9 · with SFX</span>
+            </div>
+            <!-- Replace the stage above with: <video id="hyperframes" poster="brag-output/brag.jpg" controls playsinline><source src="brag-output/brag.mp4" type="video/mp4"></video> -->
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="how">
+        <div class="wrap">
+          <h2>How it <em>works</em></h2>
+          <p class="lead">
+            One terminal where you prompt the lead. The crew does the rest —
+            isolated, live, review-gated.
+          </p>
+          <div class="grid how">
+            <div class="card" style="position: sticky; top: 88px">
+              <h3>Single-entry UX</h3>
+              <p>
+                <code>crewel init</code> once. Then <code>crewel</code> with no
+                args prompts to init if missing, or launches the 6-pane UI with
+                the lead focused. You type once; the lead fans out.
+              </p>
+              <p
+                style="
+                  margin-top: 12px;
+                  color: var(--cream);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 12px;
+                "
+              >
+                crewel init → crewel → prompt lead
+              </p>
+            </div>
+            <div class="grid grid-3">
+              <div class="card">
+                <div class="icon">◈</div>
+                <h3>1 — Init</h3>
+                <p>
+                  Pick team size, which agents and how many, and the
+                  orchestrator. Writes <code>crewel.json</code> +
+                  <code>.crewel/teams/{name}/config.json</code>.
+                </p>
+              </div>
+              <div class="card">
+                <div class="icon">⬢</div>
+                <h3>2 — Launch</h3>
+                <p>
+                  <code>crewel</code> spawns 6 real PTYs (ConPTY on Windows,
+                  forkpty on macOS) — lead 58% left, teammates 2+2+1 grid right.
+                  Each pane is interactive; you can chip in anywhere.
+                </p>
+              </div>
+              <div class="card">
+                <div class="icon">✦</div>
+                <h3>3 — Prompt the lead</h3>
+                <p>
+                  Lead decomposes your request into tickets with acceptance
+                  criteria, assigns round-robin, watches worktrees, handles
+                  <code>needs-clarification</code>, reviews, and is the only one
+                  who merges to <code>main</code>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="agents">
+        <div class="wrap">
+          <h2>Works with <em>your</em> agents</h2>
+          <p class="lead">
+            Agent-agnostic — not locked to one vendor. Mix genuinely different
+            types in one team.
+          </p>
+          <div class="grid grid-4">
+            <div class="card agent featured">
+              <div class="logo">OC</div>
+              <h3>OpenCode</h3>
+              <p>
+                Primary daily driver. Highest reliability bar. First adapter
+                built.
+              </p>
+            </div>
+            <div class="card agent">
+              <div class="logo">CC</div>
+              <h3>Claude Code</h3>
+              <p>
+                Headless <code>-p --output-format json</code> +
+                <code>api_retry</code> telemetry.
+              </p>
+            </div>
+            <div class="card agent">
+              <div class="logo">CX</div>
+              <h3>Codex</h3>
+              <p>
+                <code>exec --json</code> with output-schema, sandboxed workspace
+                writes.
+              </p>
+            </div>
+            <div class="card agent">
+              <div class="logo">MK</div>
+              <h3>Mock</h3>
+              <p>Deterministic dry-runs for CI and tests. No LLM required.</p>
+            </div>
+          </div>
+          <p
+            style="margin-top: 16px; color: var(--cream-faint); font-size: 13px"
+          >
+            Add more via the <code>AgentAdapter</code> interface — one file per
+            agent type. Core never talks to an agent directly.
+          </p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <h2>Built for <em>senior</em> teams</h2>
+          <p class="lead">
+            Not a todo list — real tickets with status, assignee, dependencies,
+            and acceptance criteria. Senior-bar by contract.
+          </p>
+          <div class="grid grid-3">
+            <div class="card">
+              <div class="icon">⬣</div>
+              <h3>Isolated worktrees</h3>
+              <p>
+                Each teammate on <code>crewel/{team}/integration</code> +
+                <code>crewel/{team}/{id}</code> branches. Main untouched until
+                close-out PR.
+              </p>
+            </div>
+            <div class="card">
+              <div class="icon">◎</div>
+              <h3>Live, not polled</h3>
+              <p>
+                <code>fs.watch</code> on <code>messages/</code>,
+                <code>tickets/</code>, <code>jason.log</code> — every teammate
+                and you are pushed the moment something relevant happens.
+              </p>
+            </div>
+            <div class="card">
+              <div class="icon">◐</div>
+              <h3>Resilient</h3>
+              <p>
+                Interrupt, stall watchdog, rate-limit auto-pause, freeze after 3
+                failures, hybrid reassign only on clean worktrees. Worktrees
+                never auto-deleted.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" style="border-bottom: none">
+        <div class="wrap">
+          <div class="cta">
+            <div>
+              <h3>Ready to stitch your crew?</h3>
+              <p>
+                One command to install, one prompt to the lead. The crew does
+                the rest — live, review-gated, and human-readable under
+                <code>.crewel/</code>.
+              </p>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap">
+              <a
+                class="btn"
+                href="https://github.com/Jasowills/crewel"
+                target="_blank"
+                rel="noopener"
+                >View on GitHub →</a
+              >
+              <button class="btn btn-ghost" onclick="copyCmd()">
+                Copy npm command
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer wrap">
+      <span
+        >© 2026 Crewel — MIT — Like crewel embroidery, many threads, one
+        fabric.</span
+      >
+      <span
+        ><a href="https://github.com/Jasowills/crewel/blob/main/docs/PRD.md"
+          >PRD</a
+        >
+        ·
+        <a
+          href="https://github.com/Jasowills/crewel/blob/main/docs/DECISIONS.md"
+          >Decisions</a
+        >
+        · <a href="https://www.npmjs.com/package/crewel">npm</a></span
+      >
+    </footer>
+
+    <script>
+      function copyCmd() {
+        const cmd = document.getElementById("npmCmd").textContent;
+        navigator.clipboard.writeText(cmd).then(() => {
+          const btns = document.querySelectorAll(".copy");
+          btns.forEach((b) => {
+            const t = b.textContent;
+            b.textContent = "Copied!";
+            setTimeout(() => (b.textContent = t), 1400);
+          });
+        });
+      }
+      function playHyperframes() {
+        const stage = document.querySelector(".video-stage");
+        // Placeholder until brag-output/brag.mp4 exists — swap to video element when ready
+        // const video = document.createElement('video');
+        // video.src = 'brag-output/brag.mp4';
+        // video.poster = 'brag-output/brag.jpg';
+        // video.controls = true; video.autoplay = true; video.playsInline = true;
+        // stage.replaceChildren(video);
+        stage.style.outline = "1px solid rgba(201,168,106,0.5)";
+        setTimeout(() => (stage.style.outline = ""), 600);
+        // For now, scroll to install
+        document
+          .getElementById("install")
+          .scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      // Respect reduced motion
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document
+          .querySelectorAll(".term-body .line")
+          .forEach((el) => (el.style.animation = "none"));
+      }
+    </script>
+  </body>
+</html>
