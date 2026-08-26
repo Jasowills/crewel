@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CrewelError } from "../core/errors.js";
 import { loadAllTeams } from "../core/team/store.js";
+import { worktreePathFor } from "../core/worktrees/index.js";
 
 export async function launchTeamUI(repoRoot: string): Promise<number> {
   const teams = await loadAllTeams(repoRoot);
@@ -20,30 +22,162 @@ export async function launchTeamUI(repoRoot: string): Promise<number> {
     return 0;
   }
 
-  // Try OpenTUI + node-pty
   try {
     const { createCliRenderer } = await import("@opentui/core");
-    await import("node-pty");
+    const { BoxRenderable, TextRenderable, EmbeddedTerminalRenderable } =
+      await import("@opentui/core");
+    const pty = await import("node-pty");
+
     const renderer = await createCliRenderer();
-    void renderer;
+    const root = (
+      renderer as unknown as { root: InstanceType<typeof BoxRenderable> }
+    ).root;
+    root.flexDirection = "row";
 
-    console.log(`Launching crewel team "${active.config.name}" with OpenTUI`);
-    console.log(`  lead: ${active.config.lead.type}`);
-    // In full impl, we would set up Flexbox layout here
-    // For now, just show the plan and keep alive
-    console.log("Layout: lead 58% left (focused) | teammates 2+2+1 grid right");
-    console.log("Each pane is a real PTY — you can chip in to any pane.");
-    console.log("Press Ctrl-C to stop.");
+    const shell =
+      process.platform === "win32"
+        ? "powershell.exe"
+        : process.env.SHELL || "/bin/zsh";
 
-    // Keep alive
-    await new Promise<void>((resolve) => {
-      process.on("SIGINT", () => {
-        console.log("\nStopping team...");
-        resolve();
+    const leadCwd = repoRoot;
+    const leadBox = new BoxRenderable(renderer as any, {
+      flexGrow: 1.6,
+      width: "58%",
+      border: true,
+      borderColor: "cyan",
+      title: `♦ LEAD — ${active.config.lead.type} — focused`,
+    });
+    const leadTerm = new EmbeddedTerminalRenderable(renderer as any, {
+      flexGrow: 1,
+    });
+    leadBox.add(leadTerm);
+    root.add(leadBox);
+
+    const right = new BoxRenderable(renderer as any, {
+      flexDirection: "column",
+      flexGrow: 1,
+      width: "42%",
+      gap: 1,
+    });
+    root.add(right);
+
+    const teammates = active.config.teammates;
+    // Build 3 rows: 2+2+1 for 5 teammates, flexible for other counts
+    const rows: InstanceType<typeof BoxRenderable>[] = [];
+    for (let i = 0; i < 3; i++) {
+      const row = new BoxRenderable(renderer as any, {
+        flexDirection: "row",
+        flexGrow: 1,
+        gap: 1,
       });
+      right.add(row);
+      rows.push(row);
+    }
+
+    const allTerms: InstanceType<typeof EmbeddedTerminalRenderable>[] = [
+      leadTerm,
+    ];
+    const ptys: ReturnType<typeof pty.spawn>[] = [];
+
+    const spawnForPane = (
+      term: InstanceType<typeof EmbeddedTerminalRenderable>,
+      title: string,
+      cwd: string,
+      cols: number,
+      rows: number
+    ) => {
+      const p = pty.spawn(shell, [], {
+        name: "xterm-256color",
+        cols,
+        rows,
+        cwd,
+        env: {
+          ...(process.env as Record<string, string>),
+          TERM: "xterm-256color",
+          COLORTERM: "truecolor",
+        },
+      });
+      term.onData = (data) => p.write(data as unknown as string);
+      term.onTerminalResize = (cols, rows) => p.resize(cols, rows);
+      p.onData((data) => term.write(data));
+      // Initial banner
+      p.write(`\r\n\x1b[1m${title}\x1b[0m — ${cwd}\r\n`);
+      return p;
+    };
+
+    // Lead pane
+    const leadPty = spawnForPane(
+      leadTerm,
+      `LEAD ${active.config.lead.type}`,
+      leadCwd,
+      80,
+      24
+    );
+    ptys.push(leadPty);
+    leadTerm.focus();
+
+    // Teammate panes
+    teammates.forEach((m, idx) => {
+      const row = rows[Math.floor(idx / 2)] ?? rows[2]!;
+      const box = new BoxRenderable(renderer as any, {
+        flexGrow: 1,
+        border: true,
+        title: ` ${m.id} (${m.type}) `,
+      });
+      const term = new EmbeddedTerminalRenderable(renderer as any, {
+        flexGrow: 1,
+      });
+      box.add(term);
+      row.add(box);
+      allTerms.push(term);
+      const cwd = worktreePathFor(repoRoot, active.config.name, m.id);
+      const p = spawnForPane(term, `${m.id}`, cwd, 80, 12);
+      ptys.push(p);
+    });
+
+    // Focus handling — Tab cycles, Ctrl+A toggles
+    let focusedIdx = 0;
+    const focusIdx = (idx: number) => {
+      allTerms.forEach((t, i) => {
+        if (i === idx) t.focus();
+        else t.blur();
+      });
+      focusedIdx = idx;
+    };
+    renderer.keyInput?.on?.("keypress", (key: any) => {
+      if (key.ctrl && key.name === "a") {
+        focusIdx((focusedIdx + 1) % allTerms.length);
+      }
+    });
+
+    // Status bar
+    const status = new TextRenderable(renderer as any, {
+      content: ` crewel — ${active.config.name} — ${active.config.teammates.length + 1} panes — Ctrl+A to switch — Ctrl-C to stop `,
+      height: 1,
+    });
+    root.add(status);
+
+    await new Promise<void>((resolve) => {
+      const cleanup = () => {
+        ptys.forEach((p) => {
+          try {
+            p.kill();
+          } catch {}
+        });
+        try {
+          (renderer as any).destroy?.();
+        } catch {}
+        resolve();
+      };
+      process.on("SIGINT", cleanup);
+      process.on("SIGTERM", cleanup);
     });
     return 0;
-  } catch {
+  } catch (e) {
+    console.error(
+      "TUI launch failed, falling back to console:",
+      (e as Error).message
+    );
     console.log(`Launching crewel team "${active.config.name}" (fallback)`);
     console.log(`  lead:      ${active.config.lead.type} (focused)`);
     console.log(
