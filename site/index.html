@@ -8,13 +8,17 @@
       name="description"
       content="A mixed crew of coding agents, stitched together on one ticket board. Cross-agent team orchestrator for OpenCode, Claude Code and Codex."
     />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" href="favicon.svg" />
+    <meta name="theme-color" content="#050505" />
     <!--
 DESIGN CONTRACT — monochrome liquid glass (user-pinned; overrides seed 41bf69cf)
+— amended 2026-08-28: roster marks now use real brand colors (opencode #201D1D on white, claude #D97757 on clay tint, openai #000 on white) as requested; mock stays monochrome.
 THESIS: One sheet of dark glass over black. The crew roster floats inside it;
 everything else is air. Refuses dense boards and card scaffolds alike.
-OWN-WORLD: pure greyscale — #050505 void, white type at three opacities,
+OWN-WORLD: #050505 void, white type at three opacities,
 glass panels rgba(255,255,255,.06) + backdrop-blur(24px) + 1px inner stroke
-rgba(255,255,255,.12), specular top edge. Single accent = pure white.
+rgba(255,255,255,.12), specular top edge. Page accent = white; roster uses brand color only inside 42px logo pills.
 STORY: calm instrument. You prompt the lead; the crew's state drifts past
 in frosted panes. Install is the only high-contrast object on the page.
 FIRST VIEWPORT: nav hairline; left column — oversized two-line headline,
@@ -273,43 +277,156 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           transparent 28%
         );
       }
-      .video-stage {
+      .hero-live {
         aspect-ratio: 16/10;
         position: relative;
         background: #000;
-      }
-      .video-stage video,
-      .video-stage .mock {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border: none;
-        background: transparent;
-      }
-      .mock {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        padding: clamp(18px, 4vw, 40px);
-        font-family: "JetBrains Mono", monospace;
-        font-size: clamp(11px, 1.2vw, 13px);
-        line-height: 2.1;
-        color: var(--w2);
+        overflow: hidden;
       }
-      .mock b {
+      .live-term {
+        padding: 26px 22px 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: clamp(11px, 1.15vw, 13px);
+        line-height: 1.9;
+        color: var(--w2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        min-height: 88px;
+      }
+      .live-term .prompt {
+        color: var(--w3);
+        margin-right: 8px;
+      }
+      .live-term .typed {
         color: var(--w1);
+      }
+      .live-term .cursor {
+        display: inline-block;
+        width: 9px;
+        height: 14px;
+        background: rgba(255, 255, 255, 0.92);
+        margin-left: 3px;
+        vertical-align: -2px;
+        animation: blink 1s step-end infinite;
+      }
+      @keyframes blink {
+        0%,
+        50% {
+          opacity: 1;
+        }
+        51%,
+        100% {
+          opacity: 0;
+        }
+      }
+      .live-status {
+        margin-top: 8px;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.55);
+        min-height: 16px;
+      }
+      .live-status b {
+        color: #fff;
         font-weight: 500;
       }
-      .mock .ok {
-        color: #fff;
+      .live-tickets {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        padding: 16px;
+        align-content: start;
+      }
+      .mini-ticket {
+        background: rgba(255, 255, 255, 0.055);
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        padding: 12px 12px 11px;
+        opacity: 0;
+        transform: translateY(8px);
+        transition:
+          opacity 420ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+          transform 420ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+          border-color 200ms;
+      }
+      .mini-ticket.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .mini-ticket:hover {
+        border-color: var(--stroke-bright);
+      }
+      .mini-ticket .k {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--w3);
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .mini-ticket .k i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--w3);
+        display: inline-block;
+      }
+      .mini-ticket.show .k i {
+        background: #fff;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+      }
+      .mini-ticket .t {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--w1);
+        letter-spacing: -0.01em;
+        line-height: 1.25;
+        margin-bottom: 4px;
+      }
+      .mini-ticket .d {
+        font-size: 11px;
+        color: var(--w2);
+        line-height: 1.45;
+        min-height: 16px;
+      }
+      .mini-ticket .a {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--w3);
+      }
+      .mini-ticket .a span {
+        padding: 3px 7px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--w1);
+        font-size: 9px;
+      }
+      .mini-ticket .a span.clay {
+        background: rgba(217, 119, 87, 0.14);
+        border-color: rgba(217, 119, 87, 0.32);
+        color: #d97757;
+      }
+      .mini-ticket .a span.dark {
+        background: #fff;
+        border-color: rgba(0, 0, 0, 0.08);
+        color: #201d1d;
       }
       .pane-bar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 18px;
+        padding: 11px 16px;
         font-family: "JetBrains Mono", monospace;
         font-size: 10.5px;
         letter-spacing: 0.14em;
@@ -318,28 +435,9 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         border-top: 1px solid var(--stroke);
         background: rgba(255, 255, 255, 0.03);
       }
-      .playbtn {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: 58px;
-        height: 58px;
-        border-radius: 50%;
-        border: 1px solid var(--stroke-bright);
-        background: rgba(20, 20, 20, 0.55);
-        color: #fff;
-        font-size: 15px;
-        cursor: pointer;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        transition:
-          transform 0.2s,
-          background 0.2s;
-      }
-      .playbtn:hover {
-        transform: translate(-50%, -50%) scale(1.08);
-        background: rgba(255, 255, 255, 0.14);
+      .pane-bar b {
+        color: var(--w1);
+        font-weight: 500;
       }
 
       /* ── sections ── */
@@ -481,6 +579,48 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       .rowl.hot .logo svg {
         opacity: 1;
       }
+      /* ── provider brand colors (real logos, not monochrome) ── */
+      .rowl[data-provider="opencode"] .logo {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.08);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          0 8px 24px rgba(0, 0, 0, 0.28);
+      }
+      .rowl[data-provider="opencode"] .logo svg {
+        color: #201d1d;
+        opacity: 1;
+      }
+      .rowl[data-provider="claude"] .logo {
+        background: rgba(217, 119, 87, 0.14);
+        border-color: rgba(217, 119, 87, 0.32);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.18),
+          0 8px 24px rgba(0, 0, 0, 0.32);
+      }
+      .rowl[data-provider="claude"] .logo svg {
+        color: #d97757;
+        opacity: 1;
+      }
+      .rowl[data-provider="openai"] .logo {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.08);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          0 8px 24px rgba(0, 0, 0, 0.28);
+      }
+      .rowl[data-provider="openai"] .logo svg {
+        color: #000000;
+        opacity: 1;
+      }
+      .rowl[data-provider="mock"] .logo {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+      .rowl[data-provider="mock"] .logo svg {
+        color: rgba(255, 255, 255, 0.92);
+        opacity: 0.92;
+      }
       .rowl h3 {
         margin: 0;
         font-size: 16px;
@@ -564,7 +704,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     </style>
   </head>
   <body>
-    <!-- monochrome logo sprite — actual marks, white on glass -->
+    <!-- logo sprite — real brand marks (colors via CSS currentColor per [data-provider]) -->
     <svg
       aria-hidden="true"
       width="0"
@@ -644,38 +784,58 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             </div>
           </div>
 
-          <div class="pane" id="videoPane">
-            <div class="video-stage">
-              <video
-                id="hfVideo"
-                playsinline
-                controls
-                muted
-                loop
-                poster=""
-                style="display: none"
-              ></video>
-              <div class="mock" id="mockTerm" aria-hidden="true">
-                <span>$ crewel init</span>
-                <span
-                  ><b>✓</b>&nbsp; team “demo”, lead&nbsp;<b>mock</b>, 5
-                  teammates</span
-                >
-                <span>$ crewel</span>
-                <span><b>lead&gt;</b> Add login flow per docs/spec.md</span>
-                <span class="ok">✓ decomposed into 3 tickets, delegating…</span>
-                <span class="ok">✓ mock-1 merged T-102 · lead reviewing…</span>
+          <div
+            class="pane"
+            id="videoPane"
+            aria-label="Live demo — lead decomposes request into tickets"
+          >
+            <div class="hero-live" id="heroLive">
+              <div class="live-term" aria-live="polite">
+                <div>
+                  <span class="prompt">lead&gt;</span
+                  ><span class="typed" id="typedText"></span
+                  ><span
+                    class="cursor"
+                    id="liveCursor"
+                    aria-hidden="true"
+                  ></span>
+                </div>
+                <div class="live-status" id="liveStatus"></div>
               </div>
-              <button
-                class="playbtn"
-                onclick="playVideo()"
-                aria-label="Play video"
-              >
-                ▶
-              </button>
+              <div class="live-tickets" id="liveTickets" aria-hidden="true">
+                <div class="mini-ticket" id="mt1">
+                  <div class="k"><i></i> AUTH-SCHEMA</div>
+                  <div class="t">Create authentication schema</div>
+                  <div class="d">users + sessions migration</div>
+                  <div class="a">→ <span class="dark">OpenCode</span></div>
+                </div>
+                <div class="mini-ticket" id="mt2">
+                  <div class="k"><i></i> LOGIN-ROUTE</div>
+                  <div class="t">Implement login API</div>
+                  <div class="d">POST /login → 200 / 401</div>
+                  <div class="a">→ <span class="clay">Claude Code</span></div>
+                </div>
+                <div class="mini-ticket" id="mt3">
+                  <div class="k"><i></i> LOGIN-TESTS</div>
+                  <div class="t">Add authentication tests</div>
+                  <div class="d">unit + integration · 80%</div>
+                  <div class="a">
+                    →
+                    <span
+                      style="
+                        background: #fff;
+                        color: #000;
+                        border-color: rgba(0, 0, 0, 0.08);
+                      "
+                      >Codex</span
+                    >
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="pane-bar">
-              <span>Hyperframes · launch cut</span><span>00:00 / 00:15</span>
+              <span id="paneLabel">lead → 3 tickets → delegates</span
+              ><span id="paneMeta"><b>DONE 0</b> · 00:00</span>
             </div>
           </div>
         </div>
@@ -734,7 +894,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           proof. The pattern holds. Adding another agent is one file.
         </p>
         <div class="rows">
-          <div class="rowl hot">
+          <div class="rowl hot" data-provider="opencode">
             <div class="logo" aria-hidden="true">
               <svg viewBox="0 0 24 24"><use href="#logo-opencode" /></svg>
             </div>
@@ -742,7 +902,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             <p>First adapter. Built first, tested hardest. SDK json_schema.</p>
             <span class="tag">Adapter 01</span>
           </div>
-          <div class="rowl">
+          <div class="rowl" data-provider="claude">
             <div class="logo" aria-hidden="true">
               <svg viewBox="0 0 24 24"><use href="#logo-claude" /></svg>
             </div>
@@ -750,7 +910,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             <p>Headless with --json-schema. api_retry maps to pause.</p>
             <span class="tag">Adapter 02</span>
           </div>
-          <div class="rowl">
+          <div class="rowl" data-provider="openai">
             <div class="logo" aria-hidden="true">
               <svg viewBox="0 0 24 24"><use href="#logo-openai" /></svg>
             </div>
@@ -758,7 +918,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             <p>--output-schema, AGENTS.md injection. Proves the pattern.</p>
             <span class="tag">Adapter 03</span>
           </div>
-          <div class="rowl">
+          <div class="rowl" data-provider="mock">
             <div class="logo" aria-hidden="true">
               <svg viewBox="0 0 24 24"><use href="#logo-mock" /></svg>
             </div>
@@ -857,50 +1017,112 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             });
           });
       }
-      async function playVideo() {
-        const v = document.getElementById("hfVideo");
-        const candidates = [
-          "brag-output/brag.mp4",
-          "site/brag-output/brag.mp4",
-          "./brag.mp4",
+      // hero live — lead → tickets, 18s loop, pause on hover, respects reduced-motion
+      (function () {
+        const text = "Add a login flow per docs/spec.md";
+        const typed = document.getElementById("typedText");
+        const status = document.getElementById("liveStatus");
+        const pane = document.getElementById("videoPane");
+        const tickets = [
+          document.getElementById("mt1"),
+          document.getElementById("mt2"),
+          document.getElementById("mt3"),
         ];
-        for (const src of candidates) {
-          try {
-            const r = await fetch(src, { method: "HEAD" });
-            if (r.ok) {
-              v.src = src;
-              v.style.display = "block";
-              document.getElementById("mockTerm").style.display = "none";
-              document.querySelector(".playbtn").style.display = "none";
-              await v.play();
+        const paneLabel = document.getElementById("paneLabel");
+        const paneMeta = document.getElementById("paneMeta");
+        if (!typed || !status || !pane) return;
+        const reduce = window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches;
+        let timers = [];
+        let tick = 0;
+        let paused = false;
+        function clearTimers() {
+          timers.forEach(clearTimeout);
+          timers = [];
+        }
+        function setMeta(s) {
+          if (paneMeta) paneMeta.innerHTML = s;
+        }
+        function schedule(fn, ms) {
+          const id = setTimeout(fn, ms);
+          timers.push(id);
+          return id;
+        }
+        function run() {
+          clearTimers();
+          typed.textContent = "";
+          status.textContent = "";
+          tickets.forEach((t) => t.classList.remove("show"));
+          if (paneLabel) paneLabel.textContent = "lead → 3 tickets → delegates";
+          setMeta("<b>DONE 0</b> · 00:00");
+          if (reduce) {
+            typed.textContent = text;
+            status.innerHTML =
+              "<b>✓</b> decomposed into 3 tickets, delegating…";
+            tickets.forEach((t) => t.classList.add("show"));
+            if (paneLabel) paneLabel.textContent = "3 tickets · live board";
+            setMeta("<b>DONE 3</b> · 00:18");
+            return;
+          }
+          let i = 0;
+          function type() {
+            if (paused) {
+              schedule(type, 120);
               return;
             }
-          } catch {}
+            if (i <= text.length) {
+              typed.textContent = text.slice(0, i);
+              i++;
+              tick = (tick + 1) % 20;
+              schedule(type, i === 1 ? 220 : 38 + Math.random() * 42);
+            } else {
+              status.innerHTML =
+                "<b>✓</b> decomposed into 3 tickets, delegating…";
+              if (paneLabel) paneLabel.textContent = "decomposed · assigning";
+              setMeta("<b>ASSIGNED 3</b> · 00:03");
+              tickets.forEach((el, idx) => {
+                schedule(
+                  () => {
+                    if (!paused) el.classList.add("show");
+                  },
+                  180 + idx * 140
+                );
+              });
+              schedule(() => {
+                if (paneLabel) paneLabel.textContent = "3 tickets · live board";
+                setMeta("<b>IN-PROGRESS 3</b> · 00:05");
+              }, 620);
+              schedule(() => {
+                status.innerHTML =
+                  "<b>✓</b> IN-REVIEW 2 · <b style='color:rgba(255,215,0,.9)'>NEEDS-CLARIFICATION 1</b>";
+                setMeta("<b>DONE 1</b> · 00:11");
+              }, 5600);
+              schedule(() => {
+                status.innerHTML =
+                  "<b>✓</b> DONE 3 · lead reviewing → integration";
+                setMeta("<b>DONE 3</b> · 00:14");
+                if (paneLabel)
+                  paneLabel.textContent = "review → integration → main";
+              }, 8200);
+            }
+          }
+          type();
+          // loop 18s
+          schedule(run, 18000);
         }
-        // fallback: replay mock typing
-        const m = document.getElementById("mockTerm");
-        m.querySelectorAll("span").forEach((s, i) => {
-          s.style.opacity = 0;
-          s.style.animation = `fadeUp .35s forwards ${i * 0.14}s`;
+        pane.addEventListener("mouseenter", () => (paused = true));
+        pane.addEventListener("mouseleave", () => (paused = false));
+        pane.addEventListener("focusin", () => (paused = true));
+        pane.addEventListener("focusout", () => (paused = false));
+        // start
+        run();
+        // keep timer in sync if tab hidden
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) paused = true;
+          else paused = false;
         });
-      }
-      const st = document.createElement("style");
-      st.textContent = "@keyframes fadeUp{to{opacity:1}}";
-      document.head.appendChild(st);
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        document
-          .getElementById("mockTerm")
-          .querySelectorAll("span")
-          .forEach((s) => (s.style.opacity = 1));
-      } else {
-        document
-          .getElementById("mockTerm")
-          .querySelectorAll("span")
-          .forEach((s, i) => {
-            s.style.opacity = 0;
-            s.style.animation = `fadeUp .35s forwards ${i * 0.14}s`;
-          });
-      }
+      })();
     </script>
   </body>
 </html>
