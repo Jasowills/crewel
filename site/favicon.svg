@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="crewel favicon">
+  <rect width="32" height="32" rx="8" fill="#050505"/>
+  <!-- stitched X — the crewel mark -->
+  <path d="M11 11 L21 21 M21 11 L11 21" stroke="white" stroke-width="2.1" stroke-linecap="round" opacity="0.92"/>
+  <circle cx="16" cy="16" r="2.4" fill="white"/>
+</svg>

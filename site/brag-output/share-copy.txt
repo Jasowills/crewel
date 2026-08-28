@@ -1,0 +1,1 @@
+Crewel — different agents, one team. OpenCode + Claude Code + Codex on one ticket board. npm install -g crewel — https://github.com/Jasowills/crewel

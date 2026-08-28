@@ -1,0 +1,1883 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #050505;
+      }
+      body {
+        font-family: "Schibsted Grotesk", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+      }
+      /* root composition */
+      #main {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #050505;
+      }
+      /* ambient washes — from site/index.html */
+      #main::before {
+        content: "";
+        position: absolute;
+        inset: -20%;
+        background:
+          radial-gradient(
+            42% 32% at 70% -5%,
+            rgba(255, 255, 255, 0.07),
+            transparent 60%
+          ),
+          radial-gradient(
+            30% 26% at 8% 30%,
+            rgba(255, 255, 255, 0.035),
+            transparent 65%
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
+      #grain {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.025;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+        z-index: 50;
+      }
+      .clip {
+        visibility: hidden;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .scene.active {
+        opacity: 1;
+      }
+      /* glass pane */
+      .glass {
+        background: rgba(255, 255, 255, 0.055);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(28px) saturate(1.1);
+        -webkit-backdrop-filter: blur(28px) saturate(1.1);
+        box-shadow:
+          0 40px 90px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 rgba(255, 255, 255, 0.16),
+          inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+        border-radius: 28px;
+        position: relative;
+        overflow: hidden;
+      }
+      .glass::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: linear-gradient(
+          115deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 28%
+        );
+      }
+      .term {
+        background: #000;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        position: relative;
+      }
+      .term-bar {
+        height: 38px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+      }
+      .dot:first-child {
+        background: rgba(255, 255, 255, 0.28);
+      }
+      /* typography helpers */
+      .hud-label {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.34);
+      }
+      .hud-white {
+        color: rgba(255, 255, 255, 0.92);
+      }
+      .hud-dim {
+        color: rgba(255, 255, 255, 0.55);
+      }
+      /* thread SVG */
+      .thread {
+        stroke: rgba(255, 255, 255, 0.32);
+        stroke-width: 1.2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .thread-dim {
+        stroke: rgba(255, 255, 255, 0.18);
+      }
+      /* ticket card */
+      .ticket {
+        width: 420px;
+        padding: 18px 20px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(18px);
+      }
+      .ticket-id {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.34);
+        margin-bottom: 6px;
+      }
+      .ticket-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.92);
+        letter-spacing: -0.01em;
+        margin-bottom: 4px;
+      }
+      .ticket-desc {
+        font-size: 12.5px;
+        color: rgba(255, 255, 255, 0.55);
+        line-height: 1.5;
+      }
+      .pill {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.92);
+      }
+      .pill-clay {
+        background: rgba(217, 119, 87, 0.14);
+        border-color: rgba(217, 119, 87, 0.32);
+        color: #d97757;
+      }
+      .pill-dark {
+        background: #ffffff;
+        color: #201d1d;
+        border-color: rgba(0, 0, 0, 0.08);
+      }
+      /* branch */
+      .branch-line {
+        stroke: rgba(255, 255, 255, 0.18);
+        stroke-width: 1;
+        fill: none;
+      }
+      .branch-dot {
+        fill: rgba(255, 255, 255, 0.92);
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="main"
+      data-composition-id="main"
+      data-width="1920"
+      data-height="1080"
+      data-start="0"
+      data-duration="90"
+    >
+      <!-- music bed (happy-beats vol-9 provides 113s, trimmed to 90 via data-duration; will duck under VO) -->
+      <audio
+        id="bed"
+        src="assets/music/bed.mp3"
+        data-start="0"
+        data-duration="90"
+        data-track-index="1"
+        data-volume="0.32"
+      ></audio>
+      <!-- voiceover track placeholder — Hyperframes may generate via Kokoro; keep VO ducking via volume envelope -->
+      <!-- narration lines are burned as captions burned-in for script fidelity even without external VO file -->
+
+      <!-- SCENE 1: THE PROBLEM — 0-8s -->
+      <section
+        id="s1"
+        class="scene clip"
+        data-start="0"
+        data-duration="8"
+        data-track-index="10"
+        style="z-index: 10"
+      >
+        <div
+          class="glass"
+          style="
+            width: 1240px;
+            height: 560px;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            opacity: 1;
+          "
+        >
+          <div
+            style="
+              height: 38px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 0 18px;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+              background: rgba(255, 255, 255, 0.03);
+              flex-shrink: 0;
+            "
+          >
+            <span class="dot"></span><span class="dot"></span
+            ><span class="dot"></span>
+            <span
+              class="mono"
+              style="
+                margin-left: 12px;
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.34);
+                letter-spacing: 0.08em;
+              "
+              >TERMINAL — lead</span
+            >
+          </div>
+          <div
+            style="
+              flex: 1;
+              background: #000;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              padding: 48px 56px;
+            "
+          >
+            <div
+              class="mono"
+              style="
+                font-size: 26px;
+                color: rgba(255, 255, 255, 0.92);
+                display: flex;
+                align-items: center;
+                gap: 14px;
+              "
+            >
+              <span style="color: rgba(255, 255, 255, 0.34)">lead&gt;</span>
+              <span id="s1-type">Add a login flow per docs/spec.md</span>
+              <span
+                id="s1-cursor"
+                style="
+                  width: 14px;
+                  height: 28px;
+                  background: rgba(255, 255, 255, 0.92);
+                  display: inline-block;
+                  margin-left: 4px;
+                  opacity: 1;
+                "
+              ></span>
+            </div>
+            <div
+              id="s1-hud1"
+              class="mono"
+              style="
+                margin-top: 44px;
+                font-size: 11px;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.92);
+                opacity: 0;
+              "
+            >
+              One request.
+            </div>
+            <div
+              id="s1-hud2"
+              class="mono"
+              style="
+                margin-top: 10px;
+                font-size: 11px;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.34);
+                opacity: 0;
+              "
+            >
+              A lot of work.
+            </div>
+          </div>
+        </div>
+        <!-- ghost fracture cards teased -->
+        <div
+          id="s1-cards"
+          style="
+            position: absolute;
+            bottom: 98px;
+            display: flex;
+            gap: 14px;
+            opacity: 0;
+          "
+        >
+          <div class="ticket" style="transform: scale(0.96)">
+            <div class="ticket-id">AUTH-SCHEMA</div>
+            <div class="ticket-title">Create authentication schema</div>
+          </div>
+          <div class="ticket" style="transform: scale(0.96)">
+            <div class="ticket-id">LOGIN-ROUTE</div>
+            <div class="ticket-title">Implement login API</div>
+          </div>
+          <div class="ticket" style="transform: scale(0.96)">
+            <div class="ticket-id">LOGIN-TESTS</div>
+            <div class="ticket-title">Add authentication tests</div>
+          </div>
+        </div>
+        <!-- VO caption burned -->
+        <div
+          id="s1-vo"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            max-width: 1100px;
+            line-height: 1.5;
+            opacity: 0;
+          "
+        >
+          Software doesn't get complicated because one engineer can't solve it.
+          It gets complicated because there's a lot to solve at once.
+        </div>
+      </section>
+
+      <!-- SCENE 2: INTRODUCE CREWEL — 8-16s -->
+      <section
+        id="s2"
+        class="scene clip"
+        data-start="8"
+        data-duration="8"
+        data-track-index="10"
+      >
+        <div id="s2-title" style="text-align: center">
+          <div
+            style="
+              font-size: 96px;
+              font-weight: 600;
+              letter-spacing: -0.035em;
+              color: rgba(255, 255, 255, 0.92);
+              line-height: 0.95;
+            "
+          >
+            CREWEL
+          </div>
+          <div
+            style="
+              margin-top: 14px;
+              font-size: 16px;
+              color: rgba(255, 255, 255, 0.55);
+              letter-spacing: 0.01em;
+            "
+          >
+            A mixed crew of coding agents, stitched together on one ticket
+            board.
+          </div>
+          <div
+            id="s2-agents"
+            style="
+              margin-top: 36px;
+              display: flex;
+              gap: 12px;
+              justify-content: center;
+              align-items: center;
+            "
+          >
+            <span
+              class="pill pill-dark"
+              style="
+                padding: 10px 18px;
+                font-size: 11px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              "
+              ><svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M22 24H2V0h20zM17 4.8H7v14.4h10z" />
+              </svg>
+              OpenCode</span
+            >
+            <span style="color: rgba(255, 255, 255, 0.34)">+</span>
+            <span
+              class="pill pill-clay"
+              style="
+                padding: 10px 18px;
+                font-size: 11px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              "
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0121-2.7325.2646-.7225.5343-.6246.7466-.3229.8076-.1215 3.4251-.2428 2.3558-.1882 2.3375-.176 2.0621-.1336.5699.0486.4378.2281.3886.3521.0242.4615-.3157.6557-.3886.4046-.5396.6193-1.3837 1.5353-2.1303 2.3132-.5396.6193-1.23 1.2554-.9762 1.0362-.5586-.091-.3097-.3521.0243-.7225.1214-.4046.4372-.8292.5829-1.1823 1.2636-2.2224.491-1.2554-.0486-.9938-.2004-.431-.5343-.6246-.6557-.431-.4361-.3399h-.8075l-1.4937-.0729-2.2646-.0728-2.2646-.0972-.2785-.0485-.1821-.1457v-.1579l.7286-.0486 1.8821-.0971 2.3974-.1214 2.3852-.1457 2.4218-.0668.8487-.006.3096.091.2914.2003.176.3522v.7285l-.8122.8804-1.3035 1.4564-.5707.674-.8318 1.4389-.2246.7042-.0425.4493-.0607.2307-.0971.2246-.2004.1821-.3764-.0243-.3036-.1457-.2428-.3886-.4424-1.0709-.4914-1.2487-.4918-1.4086-.0122-.3764.1275-.2004.2004-.1706.4614-.6065.5829-1.0362 1.6607-2.4236 1.0361-1.5231.2004-.1527.1457-.2246v-.3521l-.5397-.0486-1.0646-.0971-1.8724-.0729-2.3121-.1214-1.268-.0486-.9939-.0971-1.2086-.0971-1.0776-.0972-.2785.0243-.2246.0971-.17.2004v.3035l.6335.8804.3886.6557 1.2765 2.1569 1.499 2.4751 1.366 2.3739.606 1.0959.1707.4918.091.4372v.5707l-.2428.4005-.5396.1457-.4493.0243-.7225-.0486-1.6541-.1457-1.8398-.1579H8.1283l-2.3853-.243-.3764.0243-.2428.1457v.1705l.4128.0971 1.3296.0971 3.2133.2733 3.1179.2914.7589.091.3885.1457.1821.255"
+                />
+              </svg>
+              Claude Code</span
+            >
+            <span style="color: rgba(255, 255, 255, 0.34)">+</span>
+            <span
+              class="pill"
+              style="
+                padding: 10px 18px;
+                font-size: 11px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: #ffffff;
+                color: #000;
+                border-color: rgba(0, 0, 0, 0.08);
+              "
+              ><svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944z"
+                />
+              </svg>
+              Codex</span
+            >
+          </div>
+          <div
+            id="s2-oneteam"
+            class="mono"
+            style="
+              margin-top: 22px;
+              font-size: 11px;
+              letter-spacing: 0.14em;
+              text-transform: uppercase;
+              color: rgba(255, 255, 255, 0.92);
+              opacity: 0;
+            "
+          >
+            One team. One board.
+          </div>
+        </div>
+        <!-- thread weave visual -->
+        <svg
+          id="s2-threads"
+          width="900"
+          height="120"
+          viewBox="0 0 900 120"
+          style="
+            position: absolute;
+            bottom: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+          "
+        >
+          <path
+            d="M 80 60 C 220 60, 300 20, 450 60"
+            class="thread"
+            style="stroke: rgba(255, 255, 255, 0.45)"
+          />
+          <path
+            d="M 80 60 C 220 60, 300 100, 450 60"
+            class="thread"
+            style="stroke: rgba(217, 119, 87, 0.55)"
+          />
+          <path
+            d="M 80 60 C 220 60, 300 60, 450 60"
+            class="thread"
+            style="stroke: rgba(255, 255, 255, 0.22); stroke-dasharray: 6 8"
+          />
+          <path
+            d="M 450 60 L 820 60"
+            class="thread"
+            style="stroke: rgba(255, 255, 255, 0.45)"
+          />
+        </svg>
+        <div
+          id="s2-vo"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            max-width: 1000px;
+            opacity: 0;
+          "
+        >
+          Crewel turns different coding agents into one coordinated engineering
+          team.
+        </div>
+      </section>
+
+      <!-- SCENE 3: LEAD DECOMPOSES — 16-27s (11s) -->
+      <section
+        id="s3"
+        class="scene clip"
+        data-start="16"
+        data-duration="11"
+        data-track-index="10"
+      >
+        <div
+          style="
+            width: 1480px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+          "
+        >
+          <div
+            class="glass"
+            style="
+              padding: 22px 28px;
+              display: flex;
+              align-items: center;
+              gap: 14px;
+            "
+          >
+            <span
+              class="mono"
+              style="
+                font-size: 11px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.34);
+              "
+              >LEAD</span
+            >
+            <span
+              class="mono"
+              style="font-size: 15px; color: rgba(255, 255, 255, 0.92)"
+              >lead&gt; Add a login flow per docs/spec.md</span
+            >
+            <span
+              style="
+                margin-left: auto;
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: #fff;
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+              "
+              id="s3-pulse"
+            ></span>
+          </div>
+          <div
+            id="s3-tickets"
+            style="display: flex; gap: 16px; justify-content: center"
+          >
+            <div class="ticket" id="s3-t1" style="opacity: 0">
+              <div class="ticket-id">AUTH-SCHEMA</div>
+              <div class="ticket-title">Create authentication schema</div>
+              <div class="ticket-desc">
+                users table migration + session store
+              </div>
+              <div
+                style="
+                  margin-top: 12px;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                <span
+                  class="mono"
+                  style="font-size: 10px; color: rgba(255, 255, 255, 0.34)"
+                  >→</span
+                ><span class="pill pill-dark" style="font-size: 9px"
+                  >OpenCode</span
+                >
+              </div>
+            </div>
+            <div class="ticket" id="s3-t2" style="opacity: 0">
+              <div class="ticket-id">LOGIN-ROUTE</div>
+              <div class="ticket-title">Implement login API</div>
+              <div class="ticket-desc">
+                POST /login → 200 + set-cookie / 401
+              </div>
+              <div
+                style="
+                  margin-top: 12px;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                <span
+                  class="mono"
+                  style="font-size: 10px; color: rgba(255, 255, 255, 0.34)"
+                  >→</span
+                ><span class="pill pill-clay" style="font-size: 9px"
+                  >Claude Code</span
+                >
+              </div>
+            </div>
+            <div class="ticket" id="s3-t3" style="opacity: 0">
+              <div class="ticket-id">LOGIN-TESTS</div>
+              <div class="ticket-title">Add authentication tests</div>
+              <div class="ticket-desc">unit + integration, 80% branch</div>
+              <div
+                style="
+                  margin-top: 12px;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                <span
+                  class="mono"
+                  style="font-size: 10px; color: rgba(255, 255, 255, 0.34)"
+                  >→</span
+                ><span
+                  class="pill"
+                  style="font-size: 9px; background: #fff; color: #000"
+                  >Codex</span
+                >
+              </div>
+            </div>
+          </div>
+          <div
+            class="mono"
+            style="
+              text-align: center;
+              font-size: 10.5px;
+              letter-spacing: 0.14em;
+              text-transform: uppercase;
+              color: rgba(255, 255, 255, 0.34);
+            "
+          >
+            status · assignee · acceptance criteria
+          </div>
+        </div>
+        <div
+          id="s3-vo"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            max-width: 1200px;
+            line-height: 1.5;
+            opacity: 0;
+          "
+        >
+          Instead of throwing the whole problem at every agent, Crewel gives the
+          team a lead. The lead breaks the request into concrete tickets,
+          defines the work, and delegates it.
+        </div>
+      </section>
+
+      <!-- SCENE 4: PARALLEL EXECUTION — 27-40s (13s) HERO -->
+      <section
+        id="s4"
+        class="scene clip"
+        data-start="27"
+        data-duration="13"
+        data-track-index="10"
+      >
+        <div style="width: 1720px; display: flex; gap: 14px; height: 520px">
+          <div
+            class="glass"
+            style="
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              overflow: hidden;
+            "
+          >
+            <div
+              style="
+                height: 34px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 14px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.03);
+              "
+            >
+              <span
+                class="mono"
+                style="
+                  font-size: 10px;
+                  letter-spacing: 0.1em;
+                  text-transform: uppercase;
+                  color: rgba(255, 255, 255, 0.92);
+                "
+                >OpenCode · auth-schema</span
+              ><span
+                class="pill"
+                style="
+                  font-size: 8px;
+                  background: rgba(255, 255, 255, 0.92);
+                  color: #000;
+                "
+                >IN PROGRESS</span
+              >
+            </div>
+            <div
+              class="mono"
+              style="
+                flex: 1;
+                background: #000;
+                padding: 18px 16px;
+                font-size: 11px;
+                line-height: 1.9;
+                color: rgba(255, 255, 255, 0.55);
+              "
+            >
+              <div>
+                <span style="color: rgba(255, 255, 255, 0.34)">$</span> git
+                checkout -b crewel/demo/auth-schema
+              </div>
+              <div>
+                <span style="color: rgba(255, 255, 255, 0.92)">✓</span> branch
+                created from crewel/demo/integration
+              </div>
+              <div>
+                <span style="color: rgba(255, 255, 255, 0.34)">$</span> rg
+                "users" — 3 files
+              </div>
+              <div style="color: rgba(255, 255, 255, 0.28)">
+                src/db/schema.ts: + users, + sessions
+              </div>
+              <div>
+                <span style="color: rgba(255, 255, 255, 0.34)">$</span> npm test
+                — <span style="color: rgba(255, 255, 255, 0.92)">PASS 3/3</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="glass"
+            style="
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              overflow: hidden;
+            "
+          >
+            <div
+              style="
+                height: 34px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 14px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.03);
+              "
+            >
+              <span
+                class="mono"
+                style="
+                  font-size: 10px;
+                  letter-spacing: 0.1em;
+                  text-transform: uppercase;
+                  color: rgba(255, 255, 255, 0.92);
+                "
+                >Claude Code · login-route</span
+              ><span
+                class="pill"
+                style="
+                  font-size: 8px;
+                  background: rgba(255, 255, 255, 0.92);
+                  color: #000;
+                "
+                >IN PROGRESS</span
+              >
+            </div>
+            <div
+              class="mono"
+              style="
+                flex: 1;
+                background: #000;
+                padding: 18px 16px;
+                font-size: 11px;
+                line-height: 1.9;
+                color: rgba(255, 255, 255, 0.55);
+              "
+            >
+              <div>
+                <span style="color: rgba(255, 255, 255, 0.34)">$</span> Muse
+                --json-schema TurnReport
+              </div>
+              <div style="color: rgba(255, 255, 255, 0.28)">
+                POST /api/login → 200 + set-cookie
+              </div>
+              <div style="color: rgba(255, 255, 255, 0.28)">
+                POST /api/login → 401 invalid
+              </div>
+              <div>
+                <span style="color: rgba(255, 255, 255, 0.34)">$</span> vitest —
+                <span style="color: rgba(255, 255, 255, 0.92)">PASS</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="glass"
+            style="
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              overflow: hidden;
+            "
+          >
+            <div
+              style="
+                height: 34px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 14px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.03);
+              "
+            >
+              <span
+                class="mono"
+                style="
+                  font-size: 10px;
+                  letter-spacing: 0.1em;
+                  text-transform: uppercase;
+                  color: rgba(255, 255, 255, 0.92);
+                "
+                >Codex · login-tests</span
+              ><span
+                class="pill"
+                style="
+                  font-size: 8px;
+                  background: rgba(255, 255, 255, 0.92);
+                  color: #000;
+                "
+                >IN PROGRESS</span
+              >
+            </div>
+            <div
+              class="mono"
+              style="
+                flex: 1;
+                background: #000;
+                padding: 18px 16px;
+                font-size: 11px;
+                line-height: 1.9;
+                color: rgba(255, 255, 255, 0.55);
+              "
+            >
+              <div>
+                <span style="color: rgba(255, 255, 255, 0.34)">$</span> codex
+                exec --output-schema
+              </div>
+              <div style="color: rgba(255, 255, 255, 0.28)">
+                login.test.ts — 12 tests
+              </div>
+              <div>
+                <span style="color: rgba(255, 255, 255, 0.34)">$</span> coverage
+                —
+                <span style="color: rgba(255, 255, 255, 0.92)">82% branch</span>
+              </div>
+              <div style="color: rgba(255, 255, 255, 0.28)">
+                AGENTS.md injected
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- branch graph -->
+        <div
+          id="s4-branch"
+          style="
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+          "
+        >
+          <svg width="760" height="72" viewBox="0 0 760 72">
+            <line x1="380" y1="10" x2="380" y2="30" class="branch-line" />
+            <text
+              x="390"
+              y="18"
+              class="mono"
+              fill="rgba(255,255,255,0.34)"
+              font-size="9"
+            >
+              main
+            </text>
+            <line x1="180" y1="30" x2="580" y2="30" class="branch-line" />
+            <line x1="180" y1="30" x2="180" y2="54" class="branch-line" />
+            <line x1="380" y1="30" x2="380" y2="54" class="branch-line" />
+            <line x1="580" y1="30" x2="580" y2="54" class="branch-line" />
+            <circle cx="180" cy="60" r="6" class="branch-dot" />
+            <text
+              x="180"
+              y="76"
+              text-anchor="middle"
+              class="mono"
+              fill="rgba(255,255,255,0.55)"
+              font-size="8"
+            >
+              teammate/opencode-1
+            </text>
+            <circle cx="380" cy="60" r="6" class="branch-dot" />
+            <text
+              x="380"
+              y="76"
+              text-anchor="middle"
+              class="mono"
+              fill="rgba(255,255,255,0.55)"
+              font-size="8"
+            >
+              teammate/claude-1
+            </text>
+            <circle cx="580" cy="60" r="6" class="branch-dot" />
+            <text
+              x="580"
+              y="76"
+              text-anchor="middle"
+              class="mono"
+              fill="rgba(255,255,255,0.55)"
+              font-size="8"
+            >
+              teammate/codex-1
+            </text>
+            <text
+              x="380"
+              y="46"
+              text-anchor="middle"
+              class="mono"
+              fill="rgba(255,255,255,0.92)"
+              font-size="9"
+            >
+              crewel/demo/integration
+            </text>
+          </svg>
+          <div
+            class="mono"
+            style="
+              font-size: 9px;
+              letter-spacing: 0.12em;
+              text-transform: uppercase;
+              color: rgba(255, 255, 255, 0.34);
+            "
+          >
+            main remains untouched
+          </div>
+        </div>
+        <div
+          id="s4-hud"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.92);
+            opacity: 0;
+            text-align: center;
+          "
+        >
+          Parallel execution.<br /><span
+            style="color: rgba(255, 255, 255, 0.34)"
+            >Isolated worktrees.</span
+          >
+        </div>
+        <div
+          id="s4-vo"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 78px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            max-width: 1100px;
+            opacity: 0;
+          "
+        >
+          Every teammate works independently in an isolated git worktree, so
+          agents can move fast without stepping on each other.
+        </div>
+      </section>
+
+      <!-- SCENE 5: AGENTS COMMUNICATE — 40-50s (10s) -->
+      <section
+        id="s5"
+        class="scene clip"
+        data-start="40"
+        data-duration="10"
+        data-track-index="10"
+      >
+        <div style="width: 1640px">
+          <div
+            style="
+              display: flex;
+              gap: 8px;
+              justify-content: center;
+              margin-bottom: 16px;
+            "
+            class="mono"
+          >
+            <span class="hud-label" style="color: rgba(255, 255, 255, 0.18)"
+              >OPEN 0</span
+            ><span class="hud-label">·</span>
+            <span class="hud-label" style="color: rgba(255, 255, 255, 0.18)"
+              >ASSIGNED 0</span
+            ><span class="hud-label">·</span>
+            <span class="hud-label" style="color: rgba(255, 255, 255, 0.92)"
+              >IN-PROGRESS 3</span
+            ><span class="hud-label">·</span>
+            <span class="hud-label">IN-REVIEW 0</span
+            ><span class="hud-label">·</span>
+            <span class="hud-label">BLOCKED 0</span
+            ><span class="hud-label">·</span>
+            <span class="hud-label" style="color: rgba(255, 255, 255, 0.34)"
+              >DONE 0</span
+            >
+          </div>
+          <div style="display: flex; gap: 12px; justify-content: center">
+            <div
+              class="ticket"
+              style="border-top: 2px solid rgba(255, 255, 255, 0.22)"
+            >
+              <div class="ticket-id">AUTH-SCHEMA → IN-REVIEW</div>
+              <div class="ticket-title">auth-schema</div>
+            </div>
+            <div
+              class="ticket"
+              style="border-top: 2px solid rgba(255, 255, 255, 0.22)"
+            >
+              <div class="ticket-id">LOGIN-ROUTE → IN-REVIEW</div>
+              <div class="ticket-title">login-route</div>
+            </div>
+            <div
+              class="ticket"
+              id="s5-clarify"
+              style="border-top: 2px solid rgba(255, 215, 0, 0.45)"
+            >
+              <div class="ticket-id" style="color: rgba(255, 215, 0, 0.9)">
+                LOGIN-TESTS → NEEDS-CLARIFICATION
+              </div>
+              <div class="ticket-title">login-tests</div>
+            </div>
+          </div>
+          <div
+            id="s5-mails"
+            style="
+              margin-top: 20px;
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+              align-items: center;
+            "
+          >
+            <div
+              class="glass"
+              style="
+                padding: 12px 18px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                border-radius: 999px;
+              "
+            >
+              <span
+                class="mono"
+                style="font-size: 10px; color: rgba(255, 255, 255, 0.34)"
+                >[mail]</span
+              ><span
+                class="mono"
+                style="font-size: 12px; color: rgba(255, 255, 255, 0.92)"
+                >claude-1 → lead</span
+              ><span
+                class="mono"
+                style="font-size: 12px; color: rgba(255, 255, 255, 0.55)"
+                >Login route implemented. Ready for review.</span
+              >
+            </div>
+            <div
+              class="glass"
+              style="
+                padding: 12px 18px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                border-radius: 999px;
+              "
+            >
+              <span
+                class="mono"
+                style="font-size: 10px; color: rgba(255, 255, 255, 0.34)"
+                >[mail]</span
+              ><span
+                class="mono"
+                style="font-size: 12px; color: rgba(255, 255, 255, 0.92)"
+                >codex-1 → lead</span
+              ><span
+                class="mono"
+                style="font-size: 12px; color: rgba(255, 255, 255, 0.55)"
+                >Tests require clarification: Should failed login attempts be
+                rate limited?</span
+              >
+            </div>
+          </div>
+          <div
+            id="s5-hud"
+            class="mono"
+            style="
+              margin-top: 18px;
+              text-align: center;
+              font-size: 22px;
+              font-weight: 500;
+              letter-spacing: -0.02em;
+              color: rgba(255, 255, 255, 0.92);
+              opacity: 0;
+            "
+          >
+            Don't guess. Coordinate.
+          </div>
+        </div>
+        <div
+          id="s5-vo"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            max-width: 1150px;
+            line-height: 1.5;
+            opacity: 0;
+          "
+        >
+          And agents don't have to guess. Crewel gives them a shared,
+          human-readable state layer, live notifications, and clarification as a
+          first-class state.
+        </div>
+      </section>
+
+      <!-- SCENE 6: RESILIENCE — 50-59s (9s) -->
+      <section
+        id="s6"
+        class="scene clip"
+        data-start="50"
+        data-duration="9"
+        data-track-index="10"
+      >
+        <div style="display: flex; gap: 14px">
+          <div
+            class="glass"
+            style="width: 420px; padding: 22px 20px; text-align: center"
+          >
+            <div
+              class="mono"
+              style="
+                font-size: 10px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(255, 215, 0, 0.9);
+              "
+            >
+              Claude Code
+            </div>
+            <div
+              class="mono"
+              style="
+                margin-top: 8px;
+                font-size: 18px;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.92);
+              "
+            >
+              STALL DETECTED
+            </div>
+            <div
+              class="mono"
+              style="
+                margin-top: 10px;
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.55);
+              "
+            >
+              heartbeat · 47s silent
+            </div>
+            <div
+              class="pill"
+              style="
+                margin-top: 14px;
+                display: inline-block;
+                background: rgba(255, 215, 0, 0.14);
+                border-color: rgba(255, 215, 0, 0.32);
+                color: rgba(255, 215, 0, 0.92);
+              "
+            >
+              AUTO-PAUSE
+            </div>
+          </div>
+          <div
+            class="glass"
+            style="width: 420px; padding: 22px 20px; text-align: center"
+          >
+            <div
+              class="mono"
+              style="
+                font-size: 10px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(255, 100, 100, 0.9);
+              "
+            >
+              RATE LIMIT
+            </div>
+            <div
+              class="mono"
+              style="
+                margin-top: 8px;
+                font-size: 18px;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.92);
+              "
+            >
+              429 · Paused
+            </div>
+            <div
+              class="mono"
+              style="
+                margin-top: 10px;
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.55);
+              "
+            >
+              retry in 47s · not failed
+            </div>
+            <div class="pill" style="margin-top: 14px; display: inline-block">
+              PAUSED
+            </div>
+          </div>
+          <div
+            class="glass"
+            style="width: 420px; padding: 22px 20px; text-align: center"
+          >
+            <div
+              class="mono"
+              style="
+                font-size: 10px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(100, 255, 150, 0.9);
+              "
+            >
+              WORKTREE CLEAN
+            </div>
+            <div
+              class="mono"
+              style="
+                margin-top: 8px;
+                font-size: 18px;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.92);
+              "
+            >
+              → REASSIGN
+            </div>
+            <div
+              class="mono"
+              style="
+                margin-top: 10px;
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.55);
+              "
+            >
+              git status clean · idle teammate
+            </div>
+            <div
+              class="pill"
+              style="
+                margin-top: 14px;
+                display: inline-block;
+                background: rgba(255, 255, 255, 0.92);
+                color: #000;
+              "
+            >
+              REASSIGNED
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 18px" class="mono hud-label">
+          board continues progressing
+        </div>
+        <div
+          id="s6-vo"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            max-width: 1150px;
+            line-height: 1.5;
+            opacity: 0;
+          "
+        >
+          When something stalls, hits a rate limit, or fails repeatedly, Crewel
+          can pause, freeze, or safely reassign work instead of letting the
+          whole team get stuck.
+        </div>
+      </section>
+
+      <!-- SCENE 7: BOARD COMES TOGETHER — 59-70s (11s) -->
+      <section
+        id="s7"
+        class="scene clip"
+        data-start="59"
+        data-duration="11"
+        data-track-index="10"
+      >
+        <div style="text-align: center">
+          <div
+            class="mono"
+            style="
+              font-size: 11px;
+              letter-spacing: 0.14em;
+              text-transform: uppercase;
+              color: rgba(255, 255, 255, 0.34);
+            "
+          >
+            CREWEL / DEMO
+          </div>
+          <div
+            class="mono"
+            style="
+              margin-top: 8px;
+              font-size: 11px;
+              letter-spacing: 0.08em;
+              color: rgba(255, 255, 255, 0.55);
+            "
+          >
+            OPEN 0 · ASSIGNED 0 · IN-PROGRESS 0 · NEEDS-CLARIFICATION 0 ·
+            IN-REVIEW 0 · BLOCKED 0 ·
+            <span style="color: rgba(255, 255, 255, 0.92)">DONE 3</span>
+          </div>
+          <div
+            style="
+              margin-top: 22px;
+              display: flex;
+              gap: 12px;
+              justify-content: center;
+            "
+          >
+            <span
+              class="pill"
+              style="
+                padding: 10px 16px;
+                background: rgba(255, 255, 255, 0.92);
+                color: #000;
+              "
+              >✓ auth-schema</span
+            >
+            <span
+              class="pill"
+              style="
+                padding: 10px 16px;
+                background: rgba(255, 255, 255, 0.92);
+                color: #000;
+              "
+              >✓ login-route</span
+            >
+            <span
+              class="pill"
+              style="
+                padding: 10px 16px;
+                background: rgba(255, 255, 255, 0.92);
+                color: #000;
+              "
+              >✓ login-tests</span
+            >
+          </div>
+          <svg
+            id="s7-merge"
+            width="720"
+            height="140"
+            viewBox="0 0 720 140"
+            style="margin-top: 24px"
+          >
+            <line x1="180" y1="20" x2="180" y2="60" class="branch-line" />
+            <line x1="360" y1="20" x2="360" y2="60" class="branch-line" />
+            <line x1="540" y1="20" x2="540" y2="60" class="branch-line" />
+            <line x1="180" y1="60" x2="540" y2="60" class="branch-line" />
+            <line x1="360" y1="60" x2="360" y2="90" class="branch-line" />
+            <circle cx="360" cy="96" r="10" fill="rgba(255,255,255,0.92)" />
+            <text
+              x="360"
+              y="122"
+              text-anchor="middle"
+              class="mono"
+              fill="rgba(255,255,255,0.92)"
+              font-size="10"
+            >
+              crewel/demo/integration
+            </text>
+            <line x1="360" y1="102" x2="360" y2="126" class="branch-line" />
+            <circle cx="360" cy="132" r="7" fill="rgba(255,255,255,0.92)" />
+            <text
+              x="372"
+              y="136"
+              class="mono"
+              fill="rgba(255,255,255,0.92)"
+              font-size="10"
+            >
+              main
+            </text>
+            <text
+              x="180"
+              y="14"
+              text-anchor="middle"
+              class="mono"
+              fill="rgba(255,255,255,0.34)"
+              font-size="8"
+            >
+              teammate/opencode-1
+            </text>
+            <text
+              x="360"
+              y="14"
+              text-anchor="middle"
+              class="mono"
+              fill="rgba(255,255,255,0.34)"
+              font-size="8"
+            >
+              teammate/claude-1
+            </text>
+            <text
+              x="540"
+              y="14"
+              text-anchor="middle"
+              class="mono"
+              fill="rgba(255,255,255,0.34)"
+              font-size="8"
+            >
+              teammate/codex-1
+            </text>
+          </svg>
+        </div>
+        <div
+          id="s7-vo"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            max-width: 1100px;
+            line-height: 1.5;
+            opacity: 0;
+          "
+        >
+          The result isn't a collection of disconnected agents. It's one
+          engineering workflow, from request to reviewed code.
+        </div>
+      </section>
+
+      <!-- SCENE 8: HUMAN-READABLE STATE — 70-77s (7s) -->
+      <section
+        id="s8"
+        class="scene clip"
+        data-start="70"
+        data-duration="7"
+        data-track-index="10"
+      >
+        <div
+          class="glass"
+          style="width: 980px; padding: 28px 32px; display: flex; gap: 36px"
+        >
+          <div
+            class="mono"
+            style="
+              font-size: 13px;
+              line-height: 1.9;
+              color: rgba(255, 255, 255, 0.55);
+              min-width: 280px;
+            "
+          >
+            <div style="color: rgba(255, 255, 255, 0.92)">.crewel/</div>
+            <div>├── teams/demo/config.json</div>
+            <div>├── tickets/auth-schema.json</div>
+            <div>├── tickets/login-route.json</div>
+            <div>├── state/board.json</div>
+            <div>└── mail/lead.jsonl</div>
+            <div style="margin-top: 12px; color: rgba(255, 255, 255, 0.34)">
+              └── jason.log
+            </div>
+          </div>
+          <div class="term" style="flex: 1; padding: 18px 20px">
+            <div
+              class="mono"
+              style="font-size: 11px; color: rgba(255, 255, 255, 0.34)"
+            >
+              auth-schema.json — cat
+            </div>
+            <pre
+              class="mono"
+              style="
+                margin-top: 10px;
+                font-size: 11px;
+                line-height: 1.7;
+                color: rgba(255, 255, 255, 0.78);
+              "
+            >
+{
+  "id": "auth-schema",
+  "status": "done",
+  "assignee": "opencode-1",
+  "acceptance": [
+    "users table exists",
+    "session store handles expiry"
+  ]
+}</pre>
+          </div>
+        </div>
+        <div
+          id="s8-hud"
+          class="mono"
+          style="
+            margin-top: 18px;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.92);
+            text-align: center;
+            opacity: 0;
+          "
+        >
+          No black box.<br /><span style="color: rgba(255, 255, 255, 0.34)"
+            >Just inspectable state.</span
+          >
+        </div>
+        <div
+          id="s8-vo"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            max-width: 1000px;
+            opacity: 0;
+          "
+        >
+          And the entire state lives in your repository as human-readable JSON
+          and Markdown.
+        </div>
+      </section>
+
+      <!-- SCENE 9: FINAL HERO — 77-90s (13s) -->
+      <section
+        id="s9"
+        class="scene clip"
+        data-start="77"
+        data-duration="13"
+        data-track-index="10"
+      >
+        <svg id="s9-x" width="220" height="220" viewBox="0 0 32 32">
+          <rect
+            width="32"
+            height="32"
+            rx="8"
+            fill="#0A0A0A"
+            stroke="rgba(255,255,255,0.10)"
+          />
+          <path
+            d="M11 11 L21 21 M21 11 L11 21"
+            stroke="white"
+            stroke-width="2.1"
+            stroke-linecap="round"
+            opacity="0.92"
+          />
+          <circle cx="16" cy="16" r="2.4" fill="white" />
+        </svg>
+        <div
+          style="
+            margin-top: 18px;
+            font-size: 84px;
+            font-weight: 600;
+            letter-spacing: -0.035em;
+            color: rgba(255, 255, 255, 0.92);
+            line-height: 1;
+          "
+        >
+          CREWEL
+        </div>
+        <div
+          style="
+            margin-top: 10px;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            max-width: 820px;
+          "
+        >
+          A mixed crew of coding agents, stitched together on one ticket board.
+        </div>
+        <div
+          class="mono"
+          style="
+            margin-top: 18px;
+            font-size: 10.5px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.34);
+            text-align: center;
+            line-height: 1.7;
+          "
+        >
+          OpenCode · Claude Code · Codex<br />Agent-agnostic. &nbsp;·&nbsp;
+          Ticket-driven. &nbsp;·&nbsp; Built for real engineering teams.
+        </div>
+        <div
+          id="s9-vo"
+          class="mono"
+          style="
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.92);
+            text-align: center;
+            opacity: 0;
+          "
+        >
+          Crewel. Different agents. One team.
+        </div>
+      </section>
+
+      <div id="grain"></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* helper */
+      const easeOut = "cubic-bezier(0.25,0.46,0.45,0.94)";
+
+      /* Scene visibility timeline (seek-safe) */
+      gsap.set(".scene", { opacity: 0 });
+      tl.set("#s1", { opacity: 1 }, 0);
+      tl.set("#s2", { opacity: 0 }, 0);
+      tl.set("#s1", { opacity: 0 }, 8);
+      tl.set("#s2", { opacity: 1 }, 8);
+      tl.set("#s2", { opacity: 0 }, 16);
+      tl.set("#s3", { opacity: 1 }, 16);
+      tl.set("#s3", { opacity: 0 }, 27);
+      tl.set("#s4", { opacity: 1 }, 27);
+      tl.set("#s4", { opacity: 0 }, 40);
+      tl.set("#s5", { opacity: 1 }, 40);
+      tl.set("#s5", { opacity: 0 }, 50);
+      tl.set("#s6", { opacity: 1 }, 50);
+      tl.set("#s6", { opacity: 0 }, 59);
+      tl.set("#s7", { opacity: 1 }, 59);
+      tl.set("#s7", { opacity: 0 }, 70);
+      tl.set("#s8", { opacity: 1 }, 70);
+      tl.set("#s8", { opacity: 0 }, 77);
+      tl.set("#s9", { opacity: 1 }, 77);
+
+      /* S1 */
+      tl.fromTo(
+        "#s1-type",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.5, ease: "power2.out" },
+        0.2
+      );
+      tl.to(
+        "#s1-cursor",
+        { opacity: 0, duration: 0.3, repeat: 3, yoyo: true },
+        0.8
+      );
+      tl.to(
+        "#s1-hud1",
+        { opacity: 1, duration: 0.45, ease: "power2.out" },
+        1.9
+      );
+      tl.to("#s1-hud1", { opacity: 0.34, duration: 0.3 }, 3.2);
+      tl.to("#s1-hud2", { opacity: 1, duration: 0.45 }, 3.0);
+      tl.to("#s1-cards", { opacity: 1, duration: 0.6 }, 5.6);
+      tl.to("#s1-vo", { opacity: 1, duration: 0.4 }, 0.6);
+      tl.to("#s1-vo", { opacity: 0, duration: 0.3 }, 7.4);
+
+      /* S2 */
+      tl.fromTo(
+        "#s2-title",
+        { opacity: 0, y: 16, scale: 0.96 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" },
+        8.2
+      );
+      tl.fromTo(
+        "#s2-agents span",
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.45, stagger: 0.12, ease: "power2.out" },
+        8.7
+      );
+      tl.to("#s2-oneteam", { opacity: 1, duration: 0.4 }, 10.6);
+      tl.to("#s2-threads", { opacity: 1, duration: 0.7 }, 9.8);
+      tl.to("#s2-vo", { opacity: 1, duration: 0.4 }, 8.4);
+      tl.to("#s2-vo", { opacity: 0, duration: 0.3 }, 15.4);
+
+      /* S3 */
+      tl.fromTo(
+        "#s3-pulse",
+        { scale: 1, opacity: 1 },
+        { scale: 1.6, opacity: 0.6, duration: 0.7, repeat: 2, yoyo: true },
+        16.2
+      );
+      tl.fromTo(
+        "#s3-t1",
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
+        17.2
+      );
+      tl.fromTo(
+        "#s3-t2",
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
+        17.45
+      );
+      tl.fromTo(
+        "#s3-t3",
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
+        17.7
+      );
+      tl.to("#s3-vo", { opacity: 1, duration: 0.4 }, 16.4);
+      tl.to("#s3-vo", { opacity: 0, duration: 0.3 }, 26.4);
+
+      /* S4 */
+      tl.to("#s4-branch", { opacity: 1, duration: 0.6 }, 33);
+      tl.to("#s4-hud", { opacity: 1, duration: 0.4 }, 34.2);
+      tl.to("#s4-vo", { opacity: 1, duration: 0.4 }, 27.6);
+      tl.to("#s4-vo", { opacity: 0, duration: 0.3 }, 39.4);
+      tl.to("#s4-hud", { opacity: 0, duration: 0.3 }, 39.6);
+
+      /* S5 */
+      tl.to("#s5-hud", { opacity: 1, duration: 0.4 }, 44.5);
+      tl.to("#s5-vo", { opacity: 1, duration: 0.4 }, 40.4);
+      tl.to("#s5-vo", { opacity: 0, duration: 0.3 }, 49.4);
+      tl.to("#s5-hud", { opacity: 0, duration: 0.3 }, 49.6);
+
+      /* S6 */
+      tl.to("#s6-vo", { opacity: 1, duration: 0.4 }, 50.4);
+      tl.to("#s6-vo", { opacity: 0, duration: 0.3 }, 58.5);
+
+      /* S7 */
+      tl.to("#s7-vo", { opacity: 1, duration: 0.4 }, 59.6);
+      tl.to("#s7-vo", { opacity: 0, duration: 0.3 }, 69.4);
+
+      /* S8 */
+      tl.to("#s8-hud", { opacity: 1, duration: 0.4 }, 72);
+      tl.to("#s8-vo", { opacity: 1, duration: 0.4 }, 70.4);
+      tl.to("#s8-vo", { opacity: 0, duration: 0.3 }, 76.5);
+      tl.to("#s8-hud", { opacity: 0, duration: 0.3 }, 76.7);
+      tl.set("#s8-hud", { opacity: 0 }, 77);
+      tl.set("#s8-vo", { opacity: 0 }, 77);
+
+      /* S9 */
+      tl.fromTo(
+        "#s9-x",
+        { scale: 0.8, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.4)" },
+        77.6
+      );
+      tl.to("#s9-vo", { opacity: 1, duration: 0.5 }, 84);
+      window.__timelines["main"] = tl;
+
+      /* seek helper for hyperframes runtime */
+      document.addEventListener("DOMContentLoaded", () => {
+        tl.pause(0);
+      });
+    </script>
+  </body>
+</html>
