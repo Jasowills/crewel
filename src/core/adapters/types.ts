@@ -10,6 +10,7 @@ export interface ContextBundle {
   messages: MailMessage[];
   progressNotes: string | null;
   instructions: string;
+  model?: string;
 }
 
 export interface TurnReportMessage {

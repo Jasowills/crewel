@@ -123,9 +123,9 @@ export async function mergeApprovedTicket(input: {
   if (!ticket) {
     throw new CrewelError(`ticket "${input.ticketId}" not found`);
   }
-  if (ticket.status !== "done") {
+  if (ticket.status !== "in-review" && ticket.status !== "done") {
     throw new CrewelError(
-      `ticket "${input.ticketId}" must be done before merging (is ${ticket.status})`
+      `ticket "${input.ticketId}" must be in-review before merging (is ${ticket.status})`
     );
   }
   if (!ticket.approved) {

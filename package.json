@@ -5,11 +5,12 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "bun": ">=1.3.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jasowills/crewel.git"
+    "url": "git+https://github.com/Jasowills/crewel.git"
   },
   "homepage": "https://github.com/Jasowills/crewel#readme",
   "bugs": {
@@ -40,10 +41,12 @@
     "test": "vitest run",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "chmod +x node_modules/node-pty/prebuilds/*/spawn-helper 2>/dev/null || true"
   },
   "devDependencies": {
     "@types/node": "^26.3.0",
+    "bun-types": "^1.4.0",
     "eslint": "^10.9.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.3.0",
@@ -59,5 +62,11 @@
   },
   "allowScripts": {
     "node-pty@1.1.0": true
-  }
+  },
+  "main": "eslint.config.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "author": ""
 }

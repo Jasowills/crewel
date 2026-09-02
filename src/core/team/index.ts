@@ -8,6 +8,7 @@ import {
   buildTeamConfig,
   expandTeammatesSpec,
   isValidTeamName,
+  parseLeadSpec,
 } from "./config.js";
 import type { TeamConfig } from "./config.js";
 import {
@@ -60,7 +61,8 @@ export async function createTeam(input: {
     );
   }
   const teammates = expandTeammatesSpec(teammatesSpec);
-  const lead = requireAdapter(leadType);
+  const { type: leadAdapterType, model: leadModel } = parseLeadSpec(leadType);
+  const lead = requireAdapter(leadAdapterType);
   const teammateAdapters = [
     ...new Set(teammates.map((teammate) => teammate.type)),
   ].map(requireAdapter);
@@ -80,7 +82,12 @@ export async function createTeam(input: {
       `team "${active[0].name}" is already active in this repo — crewel enforces one active team per repo`
     );
   }
-  const config = buildTeamConfig({ name, leadType, teammates });
+  const config = buildTeamConfig({
+    name,
+    leadType: leadAdapterType,
+    leadModel,
+    teammates,
+  });
   await mkdir(teamDir(repoRoot, name), { recursive: true });
   const configPath = path.join(teamDir(repoRoot, name), "config.json");
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");

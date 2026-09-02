@@ -24,15 +24,15 @@ Plus one that emerged in grilling:
 
 ## 2. Non-goals for v1
 
-| Deferred | Why |
-|---|---|
-| Persistent/interactive teammate sessions | Turn-based execution (§4.2) covers v1; sessions become a per-adapter optimization later |
-| Gemini CLI adapter | Consumer tier stopped serving 2026-06-18; product sunsetting toward Antigravity |
-| Declarative dollar/token budgets | Reactive rate-limit detection suffices for v1 (Q17) |
-| Dashboard, desktop push by default | `jason.log` + `team watch` tail is the v1 surface (Q10) |
-| Multiple active teams per repo | One active team per repo enforced (Q20) |
-| Assignment intelligence beyond lead judgment | Round-robin-or-judgment is enough until core mechanics prove out |
-| Auto-merge to `main` | Jason always gates the close-out PR (Q8/Q15) |
+| Deferred                                     | Why                                                                                     |
+| -------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Persistent/interactive teammate sessions     | Turn-based execution (§4.2) covers v1; sessions become a per-adapter optimization later |
+| Gemini CLI adapter                           | Consumer tier stopped serving 2026-06-18; product sunsetting toward Antigravity         |
+| Declarative dollar/token budgets             | Reactive rate-limit detection suffices for v1 (Q17)                                     |
+| Dashboard, desktop push by default           | `jason.log` + `team watch` tail is the v1 surface (Q10)                                 |
+| Multiple active teams per repo               | One active team per repo enforced (Q20)                                                 |
+| Assignment intelligence beyond lead judgment | Round-robin-or-judgment is enough until core mechanics prove out                        |
+| Auto-merge to `main`                         | Jason always gates the close-out PR (Q8/Q15)                                            |
 
 ## 3. Glossary
 
@@ -115,8 +115,8 @@ Debuggability is a requirement: any user can `cat` their way to full understandi
 
 - **FR-1** `crewel team create {name} --lead {type} --teammates {type}:{count},...` — instance count and agent type per instance are first-class creation-time config (Q19: any adapter may be lead). Creation validates that each nominated CLI exists and is authenticated before anything spawns.
 - **FR-2** Two intake modes:
-  - *Default:* `crewel team run {name} --request "..."` — the lead decomposes the request into tickets (independently workable, clearly scoped, explicit acceptance criteria — prd-to-issues discipline) and assigns them.
-  - *Direct:* hand-authored Markdown tickets with YAML frontmatter, validated by `crewel tickets validate`, then run without lead decomposition (Q18).
+  - _Default:_ `crewel team run {name} --request "..."` — the lead decomposes the request into tickets (independently workable, clearly scoped, explicit acceptance criteria — prd-to-issues discipline) and assigns them.
+  - _Direct:_ hand-authored Markdown tickets with YAML frontmatter, validated by `crewel tickets validate`, then run without lead decomposition (Q18).
 - **FR-3** One active team per target repo; violating attempts get a clear error (Q20). Requires the target to be a git repo; worktree-per-teammate is mandatory (Q11).
 
 ### 5.2 Lead behavior
@@ -159,21 +159,21 @@ Debuggability is a requirement: any user can `cat` their way to full understandi
 
 - **NFR-1** Human-readable, cat-able coordination state; no opaque formats (spec §3.5).
 - **NFR-2** No daemon/server process; plain CLI operating over the cwd repo.
-- **NFR-3** TypeScript, Node ≥20, ESM, vitest; single npm package (Q3).
+- **NFR-3** TypeScript, ESM, vitest; single npm package — runtime: Bun ≥1.3.0 (OpenTUI TUI) or Node ≥26.4 with `--experimental-ffi --allow-ffi`; non-TUI commands work on Node ≥20 with console fallback (Q3, see `docs/research/opentui-ffi-failure.md`).
 - **NFR-4** Graceful degradation everywhere: pause, never silently fail the team (spec §4.4).
 - **NFR-5** Worktrees are sacred: no command deletes or resets teammate work except archive-time cleanup of merged branches.
 - **NFR-6** MIT license (Q2).
 
 ## 7. Milestones
 
-| # | Milestone | Acceptance criteria |
-|---|---|---|
-| M1 | Core + mock adapter | Full ticket/mailbox/report/watchdog loop provable end-to-end in tests with zero real agents; TDD throughout — this milestone owns the subtle logic (state machine, routing, completion classification) |
-| M2 | OpenCode adapter | Real OpenCode teammate completes a scoped ticket in a scratch repo; TurnReport enforced via SDK `json_schema`; persona injection via agent definition; held to highest bar |
-| M3 | Claude Code adapter | Same bar via `claude -p --output-format json --json-schema`; `api_retry` events mapped to rate-limit handling |
-| M4 | Codex adapter | Proves pattern generalizes to a third, structurally different agent (`codex exec --output-schema`, AGENTS.md injection) |
-| M5 | Worktree isolation + checkpoints | Parallel teammates on one repo without conflicts; dependency-resolve rebases; conflict escalation path works |
-| M6 | CLI polish + archive + docs | Full command surface, `tickets validate`, `team watch`, `team archive`, README worth starring |
+| #   | Milestone                        | Acceptance criteria                                                                                                                                                                                    |
+| --- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M1  | Core + mock adapter              | Full ticket/mailbox/report/watchdog loop provable end-to-end in tests with zero real agents; TDD throughout — this milestone owns the subtle logic (state machine, routing, completion classification) |
+| M2  | OpenCode adapter                 | Real OpenCode teammate completes a scoped ticket in a scratch repo; TurnReport enforced via SDK `json_schema`; persona injection via agent definition; held to highest bar                             |
+| M3  | Claude Code adapter              | Same bar via `claude -p --output-format json --json-schema`; `api_retry` events mapped to rate-limit handling                                                                                          |
+| M4  | Codex adapter                    | Proves pattern generalizes to a third, structurally different agent (`codex exec --output-schema`, AGENTS.md injection)                                                                                |
+| M5  | Worktree isolation + checkpoints | Parallel teammates on one repo without conflicts; dependency-resolve rebases; conflict escalation path works                                                                                           |
+| M6  | CLI polish + archive + docs      | Full command surface, `tickets validate`, `team watch`, `team archive`, README worth starring                                                                                                          |
 
 ## 8. v1 success criterion
 
@@ -188,4 +188,4 @@ crewel team run login-flow --request "Implement the login flow per docs/spec.md"
 
 ---
 
-*Everything above traces to a resolved decision; see [`DECISIONS.md`](DECISIONS.md). Nothing in this PRD is aspirational — the senior-engineer bar is FR-6/FR-7, push-not-poll is FR-11/FR-12, and "never guess" is a protocol state.*
+_Everything above traces to a resolved decision; see [`DECISIONS.md`](DECISIONS.md). Nothing in this PRD is aspirational — the senior-engineer bar is FR-6/FR-7, push-not-poll is FR-11/FR-12, and "never guess" is a protocol state._

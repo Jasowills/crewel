@@ -174,17 +174,18 @@ export function createOpencodeAdapter(
     },
     async runTurn(input: RunTurnInput): Promise<TurnResult> {
       const prompt = renderOpencodePrompt(input.bundle);
+      const args = ["run", "--format", "json"];
+      if (input.bundle.model) {
+        args.push("--model", input.bundle.model);
+      }
+      args.push(prompt);
       try {
-        const { stdout, stderr } = await run(
-          bin,
-          ["run", "--format", "json", prompt],
-          {
-            cwd: input.bundle.worktreePath,
-            timeout: timeoutMs,
-            maxBuffer: 64 * 1024 * 1024,
-            signal: input.signal as never,
-          }
-        );
+        const { stdout, stderr } = await run(bin, args, {
+          cwd: input.bundle.worktreePath,
+          timeout: timeoutMs,
+          maxBuffer: 64 * 1024 * 1024,
+          signal: input.signal as never,
+        });
         void stderr;
         const finalText = extractFinalText(stdout);
         if (finalText === null) {

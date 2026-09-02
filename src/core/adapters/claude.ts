@@ -209,23 +209,61 @@ export function createClaudeAdapter(
     },
     async runTurn(input: RunTurnInput): Promise<TurnResult> {
       const prompt = renderClaudePrompt(input.bundle);
+      const baseArgs = [
+        "-p",
+        prompt,
+        "--output-format",
+        "json",
+        "--dangerously-skip-permissions",
+      ];
+      if (input.bundle.model) {
+        baseArgs.push("--model", input.bundle.model);
+      }
+      const turnReportSchema = JSON.stringify({
+        type: "object",
+        required: ["status", "summary"],
+        properties: {
+          status: {
+            type: "string",
+            enum: ["done", "blocked", "in-progress", "needs-clarification"],
+          },
+          summary: { type: "string" },
+          changedFiles: { type: "array", items: { type: "string" } },
+          testEvidence: { type: "array", items: { type: "string" } },
+          message: {
+            type: "object",
+            properties: { to: { type: "string" }, body: { type: "string" } },
+          },
+          progressNotes: { type: "string" },
+        },
+      });
+      const tryArgs = async (extra: string[]) => {
+        const args = [...baseArgs, ...extra];
+        return run(bin, args, {
+          cwd: input.bundle.worktreePath,
+          timeout: timeoutMs,
+          maxBuffer: 64 * 1024 * 1024,
+          signal: input.signal as never,
+        });
+      };
+      let stdout: string;
+      let stderr: string;
       try {
-        const { stdout, stderr } = await run(
-          bin,
-          [
-            "-p",
-            prompt,
-            "--output-format",
-            "json",
-            "--dangerously-skip-permissions",
-          ],
-          {
-            cwd: input.bundle.worktreePath,
-            timeout: timeoutMs,
-            maxBuffer: 64 * 1024 * 1024,
-            signal: input.signal as never,
+        try {
+          const res = await tryArgs(["--json-schema", turnReportSchema]);
+          stdout = res.stdout;
+          stderr = res.stderr;
+        } catch (e: unknown) {
+          const err = e as { stderr?: string; message?: string };
+          const msg = (err.stderr ?? err.message ?? "").toLowerCase();
+          if (msg.includes("json-schema") || msg.includes("unknown option")) {
+            const res2 = await tryArgs([]);
+            stdout = res2.stdout;
+            stderr = res2.stderr;
+          } else {
+            throw e;
           }
-        );
+        }
         // Check for typed retry telemetry in stdout before final text extraction
         if (
           stdout.toLowerCase().includes("api_retry") &&

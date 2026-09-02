@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/crewel.svg)](https://www.npmjs.com/package/crewel)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node >=20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
+[![Bun >=1.3](https://img.shields.io/badge/bun-%3E%3D1.3-black.svg)](https://bun.sh) [![Node >=26.4 --experimental-ffi](https://img.shields.io/badge/node-%3E%3D26.4%20--experimental--ffi-yellow.svg)](https://nodejs.org/api/ffi.html)
 
 > A mixed crew of coding agents, stitched together on one ticket board.
 
@@ -27,8 +27,10 @@ notifications.
 ## Quickstart
 
 ```sh
-# Install (requires Node >=20)
-npm install -g crewel
+# Install — TUI needs Bun >=1.3.0 (OpenTUI FFI), or Node >=26.4 with --experimental-ffi
+bun add -g crewel        # recommended: bunx crewel / bun --bun crewel
+# or: npm install -g crewel  # non-TUI commands work on Node >=20; TUI falls back to console
+# or: npm install -g crewel && NODE_OPTIONS="--experimental-ffi --allow-ffi" crewel  # Node 26.4+ TUI
 
 # In a git repo with at least one commit — interactive setup
 crewel init
@@ -85,7 +87,7 @@ crewel team status
 #   board:     open 0 · assigned 0 · in-progress 0 · needs-clarification 0 · in-review 0 · blocked 0 · done 1
 ```
 
-Launch the team — 6 panes, lead focused (works on Windows and macOS):
+Launch the team — 6 panes via OpenTUI + node-pty/Bun.spawn (Bun ≥1.3.0 for TUI, Node ≥26.4 --experimental-ffi, fallback to console on Node 20-24):
 
 ```sh
 crewel

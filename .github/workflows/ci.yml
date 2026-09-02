@@ -8,16 +8,51 @@ jobs:
   ci:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [20, 22]
+        include:
+          - os: ubuntu-latest
+            bun: "1.4.0"
+            node: "26"
+          - os: macos-latest
+            bun: "1.4.0"
+            node: "26"
+          - os: windows-latest
+            bun: "1.4.0"
+            node: "26"
+          - os: ubuntu-latest
+            bun: "false"
+            node: "20"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        if: matrix.bun != 'false'
+        with:
+          bun-version: ${{ matrix.bun }}
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm test
+      - name: Install (Bun)
+        if: matrix.bun != 'false'
+        run: bun install --frozen-lockfile
+      - name: Install (Node)
+        if: matrix.bun == 'false'
+        run: npm ci
+      - name: Lint (Bun)
+        if: matrix.bun != 'false'
+        run: bun run lint
+      - name: Lint (Node)
+        if: matrix.bun == 'false'
+        run: npm run lint
+      - name: Typecheck (Bun)
+        if: matrix.bun != 'false'
+        run: bun run typecheck
+      - name: Typecheck (Node)
+        if: matrix.bun == 'false'
+        run: npm run typecheck
+      - name: Test (Bun TUI)
+        if: matrix.bun != 'false'
+        run: bunx vitest run
+      - name: Test (Node console fallback)
+        if: matrix.bun == 'false'
+        run: npm test

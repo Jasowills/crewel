@@ -302,12 +302,13 @@ export async function approveTicket(input: {
   if (!ticket) {
     throw new CrewelError(`ticket "${input.ticketId}" not found`);
   }
-  if (ticket.status !== "done") {
+  if (ticket.status !== "in-review") {
     throw new CrewelError(
-      `only done tickets can be approved ("${input.ticketId}" is ${ticket.status})`
+      `only in-review tickets can be approved ("${input.ticketId}" is ${ticket.status})`
     );
   }
   await updateTicket(input.repoRoot, input.team, input.ticketId, {
+    status: "done",
     approved: true,
   });
   safeNotify({
@@ -411,10 +412,12 @@ async function persistNotes(
 function applyReportToTicket(report: TurnReport, now: Date): Partial<Ticket> {
   switch (report.status) {
     case "done":
-      return { status: "done", clarification: null };
+      // done from agent means ready for review, not yet merged — go to in-review
+      return { status: "in-review", clarification: null };
     case "blocked":
       return { status: "blocked" };
     case "needs-clarification":
+      // keep status assigned with clarification subfield for board's needs-clarification display
       return {
         status: "assigned",
         clarification: {
@@ -518,13 +521,19 @@ export async function runTeammateTurn(input: {
 
   // Work due: fresh assignments plus resumable in-progress work. A ticket
   // parked in-progress still belongs to its teammate across turns. Frozen
-  // tickets are immune until released.
-  let work = (await loadTickets(repoRoot, team)).filter(
+  // tickets are immune until released. Dependencies must be done (Claude's
+  // pending task with unresolved deps cannot be claimed).
+  const allTicketsForDeps = await loadTickets(repoRoot, team);
+  let work = allTicketsForDeps.filter(
     (ticket) =>
       ticket.assignee === participantId &&
       !ticket.clarification &&
       !ticket.frozen &&
-      (ticket.status === "assigned" || ticket.status === "in-progress")
+      (ticket.status === "assigned" || ticket.status === "in-progress") &&
+      ticket.dependsOn.every(
+        (depId) =>
+          allTicketsForDeps.find((t) => t.id === depId)?.status === "done"
+      )
   );
   if (messages.length === 0 && work.length === 0) {
     return { ran: false, reason: "nothing-due", ticketIds: [] };
@@ -595,6 +604,7 @@ export async function runTeammateTurn(input: {
         messages,
         progressNotes: notes,
         instructions: SENIOR_ENGINEER_INSTRUCTIONS,
+        model: participant.model,
       },
       heartbeatPath,
       touchHeartbeat,

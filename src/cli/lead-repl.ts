@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { decomposeRequest } from "../core/lead/index.js";

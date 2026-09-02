@@ -1,8 +1,8 @@
 import { appendFile, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { readFile, writeFile } from "node:fs/promises";
-import { CrewelError } from "../errors.js";
+import { readFile } from "node:fs/promises";
 import { teamDir } from "../team/store.js";
+import { atomicWriteFile, withFileLock } from "../team/lock.js";
 
 export interface MailMessage {
   id: string;
@@ -45,11 +45,11 @@ export async function sendMessage(input: {
   };
   const dir = mailboxDir(input.repoRoot, input.team, input.to);
   await mkdir(dir, { recursive: true });
-  await appendFile(
-    path.join(dir, "inbox.jsonl"),
-    `${JSON.stringify(message)}\n`,
-    "utf8"
-  );
+  const inboxPath = path.join(dir, "inbox.jsonl");
+  // File write = delivered; disk-full/EACCES will throw to caller (delivery error)
+  await withFileLock(inboxPath, async () => {
+    await appendFile(inboxPath, `${JSON.stringify(message)}\n`, "utf8");
+  });
   return message;
 }
 
@@ -62,34 +62,41 @@ export async function drainInbox(
     mailboxDir(repoRoot, team, participant),
     "inbox.jsonl"
   );
-  let raw: string;
-  try {
-    raw = await readFile(inboxPath, "utf8");
-  } catch {
-    return [];
-  }
-  const messages: MailMessage[] = [];
-  for (const line of raw.split("\n")) {
-    if (line.trim() === "") continue;
+  return withFileLock(inboxPath, async () => {
+    let raw: string;
     try {
-      messages.push(JSON.parse(line) as MailMessage);
+      raw = await readFile(inboxPath, "utf8");
     } catch {
-      throw new CrewelError(
-        `corrupt mailbox line for "${participant}" — fix or remove ${inboxPath}`
+      return [];
+    }
+    const messages: MailMessage[] = [];
+    const validLines: string[] = [];
+    for (const line of raw.split("\n")) {
+      if (line.trim() === "") continue;
+      try {
+        const msg = JSON.parse(line) as MailMessage;
+        messages.push(msg);
+        validLines.push(line);
+      } catch {
+        // Malformed entry: report and remove (Claude pre-2.1.207 blocked, now removed)
+        console.warn(
+          `[crewel] corrupt mailbox line for "${participant}" — skipping: ${line.slice(0, 120)}`
+        );
+      }
+    }
+    if (messages.length > 0) {
+      const archivePath = path.join(
+        mailboxDir(repoRoot, team, participant),
+        "archive.jsonl"
+      );
+      await appendFile(archivePath, validLines.join("\n") + "\n", "utf8");
+    } else if (validLines.length === 0 && raw.trim() !== "") {
+      // All lines were corrupt — still truncate to avoid loop
+      console.warn(
+        `[crewel] all mailbox lines for "${participant}" were corrupt — truncating ${inboxPath}`
       );
     }
-  }
-  if (messages.length > 0) {
-    const archivePath = path.join(
-      mailboxDir(repoRoot, team, participant),
-      "archive.jsonl"
-    );
-    await appendFile(
-      archivePath,
-      messages.map((m) => JSON.stringify(m)).join("\n") + "\n",
-      "utf8"
-    );
-  }
-  await writeFile(inboxPath, "", "utf8");
-  return messages;
+    await atomicWriteFile(inboxPath, "", "utf8");
+    return messages;
+  });
 }

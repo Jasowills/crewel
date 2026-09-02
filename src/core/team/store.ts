@@ -4,6 +4,7 @@ import { CrewelError } from "../errors.js";
 import { TICKET_LIFECYCLE } from "../tickets/model.js";
 import type { Ticket } from "../tickets/model.js";
 import type { TeamConfig } from "./config.js";
+import { atomicWriteFile, withFileLock } from "./lock.js";
 
 export const crewelDirName = ".crewel";
 
@@ -118,6 +119,41 @@ export async function loadTickets(
   return tickets;
 }
 
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  open: [
+    "assigned",
+    "in-progress",
+    "needs-clarification",
+    "blocked",
+    "in-review",
+    "done",
+  ],
+  assigned: [
+    "in-progress",
+    "needs-clarification",
+    "blocked",
+    "in-review",
+    "done",
+  ],
+  "in-progress": [
+    "needs-clarification",
+    "blocked",
+    "in-review",
+    "done",
+    "assigned",
+  ],
+  "needs-clarification": ["assigned", "blocked", "in-progress"],
+  "in-review": ["done", "in-progress", "blocked", "assigned"],
+  blocked: ["assigned", "in-progress", "needs-clarification"],
+  done: ["in-review", "assigned", "in-progress", "blocked"], // allow bounce via checkCommand and re-open
+};
+
+function isValidTransition(from: string, to: string): boolean {
+  if (from === to) return true;
+  const allowed = ALLOWED_TRANSITIONS[from];
+  return !!allowed && allowed.includes(to);
+}
+
 export async function updateTicket(
   repoRoot: string,
   team: string,
@@ -125,21 +161,37 @@ export async function updateTicket(
   patch: Partial<Ticket>
 ): Promise<Ticket> {
   const ticketPath = path.join(ticketsDir(repoRoot, team), `${id}.json`);
-  let raw: string;
-  try {
-    raw = await readFile(ticketPath, "utf8");
-  } catch {
-    throw new CrewelError(`ticket "${id}" not found — validate tickets first`);
-  }
-  let current: Ticket;
-  try {
-    current = JSON.parse(raw) as Ticket;
-  } catch {
-    throw new CrewelError(`corrupt ticket twin for "${id}"`);
-  }
-  const updated: Ticket = { ...current, ...patch };
-  await writeFile(ticketPath, `${JSON.stringify(updated, null, 2)}\n`, "utf8");
-  return updated;
+  return withFileLock(ticketPath, async () => {
+    let raw: string;
+    try {
+      raw = await readFile(ticketPath, "utf8");
+    } catch {
+      throw new CrewelError(
+        `ticket "${id}" not found — validate tickets first`
+      );
+    }
+    let current: Ticket;
+    try {
+      current = JSON.parse(raw) as Ticket;
+    } catch {
+      throw new CrewelError(`corrupt ticket twin for "${id}"`);
+    }
+    // Enforce status FSM if patch changes status
+    if (patch.status && patch.status !== current.status) {
+      if (!isValidTransition(current.status, patch.status)) {
+        throw new CrewelError(
+          `invalid ticket status transition "${current.status}" → "${patch.status}" for "${id}"`
+        );
+      }
+    }
+    const updated: Ticket = { ...current, ...patch };
+    await atomicWriteFile(
+      ticketPath,
+      `${JSON.stringify(updated, null, 2)}\n`,
+      "utf8"
+    );
+    return updated;
+  });
 }
 
 export function participantsDir(repoRoot: string, team: string): string {

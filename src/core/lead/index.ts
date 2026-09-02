@@ -294,6 +294,7 @@ export async function decomposeRequest(input: {
     throw new CrewelError(`no team named "${teamName}"`);
   }
   const leadType = entry.config.lead.type;
+  const leadModel = entry.config.lead.model;
   const adapter = getAdapter(leadType);
   if (!adapter) {
     throw new CrewelError(
@@ -319,6 +320,7 @@ export async function decomposeRequest(input: {
     messages: [],
     progressNotes: null,
     instructions: `${LEAD_INSTRUCTIONS}\n\n${DECOMPOSITION_CONTRACT}`,
+    model: leadModel,
   };
 
   const heartbeatPath = path.join(

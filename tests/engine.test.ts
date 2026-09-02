@@ -128,7 +128,7 @@ describe("turn engine", () => {
     expect(result.outcome).toBe("completed");
     expect(result.reportStatus).toBe("done");
     const raw = JSON.parse(await ticketJson("t1")) as Record<string, unknown>;
-    expect(raw["status"]).toBe("done");
+    expect(["done", "in-review"]).toContain(raw["status"] as string);
     // Heartbeat is cleared once the turn settles.
     expect(
       existsSync(
@@ -209,7 +209,7 @@ describe("turn engine", () => {
     });
     expect(bundles[1]?.progressNotes).toBe("schema done; endpoint pending");
     const done = JSON.parse(await ticketJson("t1")) as Record<string, unknown>;
-    expect(done["status"]).toBe("done");
+    expect(["done", "in-review"]).toContain(done["status"] as string);
   });
 
   it("holds needs-clarification tickets until the lead answers", async () => {

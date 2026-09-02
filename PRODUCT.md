@@ -16,7 +16,7 @@ Primary: engineers who already run multiple coding agents (OpenCode, Claude Code
 
 ## Product Purpose
 
-Crewel is an open-source CLI that turns heterogeneous coding agents into one orchestrated team. A dedicated lead decomposes a request into tickets, delegates to teammates running in isolated git worktrees, reviews their output, and is the only instance that merges to main. Success = a user goes from `npm install` to prompting a lead in a 6-pane terminal in under 2 minutes.
+Crewel is an open-source CLI that turns heterogeneous coding agents into one orchestrated team. A dedicated lead decomposes a request into tickets, delegates to teammates running in isolated git worktrees, reviews their output, and is the only instance that merges to main. Success = a user goes from `bun add -g crewel` (or `npm install -g crewel` for non-TUI) to prompting a lead in a 6-pane terminal in under 2 minutes.
 
 ## Positioning
 
@@ -28,7 +28,7 @@ Developer's own machine, own repo, local terminal. Used during focused feature w
 
 ## Capabilities and Constraints
 
-- `crewel init` wizard → `crewel` launches 6 real PTY panes (lead 58% left, teammates 2+2+1 grid right) via OpenTUI + node-pty; works on Windows (ConPTY) and macOS (forkpty)
+- `crewel init` wizard → `crewel` launches 6 real PTY panes (lead 58% left, teammates 2+2+1 grid right) via OpenTUI + node-pty (Node) / Bun.spawn pty (Bun); requires Bun ≥1.3.0 for TUI or Node ≥26.4 --experimental-ffi, fallback to console on Node 20-24; works on Windows (ConPTY) and macOS (forkpty)
 - Ticket-driven protocol with status/assignee/dependencies/acceptance criteria; `needs-clarification` is first-class
 - Live `fs.watch` notifications; interrupt/stall-watchdog/rate-limit-pause/freeze-after-3-failures resilience
 - Adapters: OpenCode, Claude Code, Codex, Mock. One file per new agent type.

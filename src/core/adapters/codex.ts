@@ -262,8 +262,13 @@ export function createCodexAdapter(
     },
     async runTurn(input: RunTurnInput): Promise<TurnResult> {
       const prompt = renderCodexPrompt(input.bundle);
+      const args = ["exec", "--json"];
+      if (input.bundle.model) {
+        args.push("--model", input.bundle.model);
+      }
+      args.push(prompt);
       try {
-        const { stdout, stderr } = await run(bin, ["exec", "--json", prompt], {
+        const { stdout, stderr } = await run(bin, args, {
           cwd: input.bundle.worktreePath,
           timeout: timeoutMs,
           maxBuffer: 64 * 1024 * 1024,

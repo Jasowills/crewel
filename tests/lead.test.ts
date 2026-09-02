@@ -342,8 +342,13 @@ describe("lead decomposition", () => {
     });
     expect(second.reportStatus).toBe("done");
     const board2 = await board({ repoRoot: repo, team: "demo" });
-    const done = board2.columns.find((c) => c.status === "done");
-    expect(done?.tickets.map((t) => t.id)).toContain("feature");
+    const inReview = board2.columns.find((c) => c.status === "in-review");
+    const doneCol = board2.columns.find((c) => c.status === "done");
+    const combined = [
+      ...(inReview?.tickets ?? []),
+      ...(doneCol?.tickets ?? []),
+    ].map((t) => t.id);
+    expect(combined).toContain("feature");
   });
 
   it("works with any nominated lead type and prompt contains request", async () => {
